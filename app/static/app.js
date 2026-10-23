@@ -170,8 +170,9 @@ function renderStoryboard() {
   return h;
 }
 
-const CHECK = { file: "파일", overflow: "글자 잘림", contrast: "대비", phone: "휴대폰 가독성", sources: "사실/출처" };
+const CHECK = { picture: "그림 보임", file: "파일", overflow: "글자 잘림", contrast: "대비", phone: "휴대폰 가독성", sources: "사실/출처" };
 let picked = new Set();
+let editing = null;  // 휴대폰 미리보기·글자 고치기 창을 연 카드 id
 
 function renderCards() {
   const s = state.stage;
@@ -194,6 +195,7 @@ function renderCards() {
       <dt>본문</dt><dd>${esc(t.body ?? c.body ?? "-")}</dd>
       <dt>그림 계획</dt><dd>${esc(t.image_role ?? c.image_role ?? "")}${(t.image_role ?? c.image_role) ? "<br>" : ""}<span class="muted">${esc(t.image_plan)}</span></dd>
       <dt>출처</dt><dd>${t.sources.length ? t.sources.map((u) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("<br>") : "없음"}</dd></dl></details>`;
+    if (cur) h += `<button class="secondary editCard" data-id="${c.id}" style="width:100%;margin:4px 0">📱 휴대폰 미리보기·글자 고치기${cur.problems?.length ? ` <span class="bad">(문제 ${cur.problems.length})</span>` : ""}</button>`;
     if (cur) {
       h += `<ul class="checks">${Object.entries(cur.checks).map(([k, v]) => `<li class="${v.ok ? "ok" : "bad"}">${v.ok ? "✓" : "✗"} ${CHECK[k] || k}: ${esc(v.detail)}</li>`).join("")}</ul>`;
       h += `<p class="muted">이미지: ${esc(cur.image.tool)} · ${esc(cur.image.note || "")}</p>`;
@@ -202,6 +204,7 @@ function renderCards() {
     h += `</div>`;
   }
   h += `</div>`;
+  if (editing) h += renderEditor(state.cards.find((c) => c.id === editing));
   if (!state.active_run) {
     h += `<div class="box"><h2>부분 수정</h2><p class="muted">고칠 카드를 체크하고 요청을 적으세요. 체크하지 않은 카드는 바뀌지 않습니다. 요청을 비우면 그림만 다시 만듭니다.</p>
       <textarea id="instr" rows="2" placeholder="예: 제목을 더 짧게, 본문에 패치 버전 강조"></textarea>
@@ -209,6 +212,46 @@ function renderCards() {
       ${s === "final_review" ? `<button id="approveFinal">최종 승인</button>` : ""}</div></div>`;
   }
   return h;
+}
+
+const PALETTE = { match: "그림 배경색", dark: "남색" };
+const POS = { split: "글자 위 · 그림 아래 (겹치지 않게)", picture_top: "그림 위 · 글자 아래 (겹치지 않게)", top: "그림 위에 겹쳐서: 위(제목)·아래(본문)", bottom: "그림 위에 겹쳐서: 모두 아래 띠에" };
+const SIZE = { small: "작게", normal: "보통", large: "크게" };
+const SHADE = { light: "약하게", normal: "보통", strong: "강하게" };
+
+function renderEditor(c) {
+  if (!c) return "";
+  const cur = c.current ? c.versions[c.current - 1] : null;
+  const lay = { position: "split", size: "normal", shade: "normal", palette: "match", ...(cur?.layout || {}), ...(c.layout || {}) };
+  const sel = (id, map, val) => `<select id="${id}">${Object.entries(map).map(([v, t]) => `<option value="${v}" ${v === val ? "selected" : ""}>${t}</option>`).join("")}</select>`;
+  const probs = cur?.problems || [];
+  return `<div class="modal" id="modal"><div class="sheet">
+    <div class="row" style="justify-content:space-between"><h2 style="margin:0">${c.index}번 카드 · 휴대폰 미리보기</h2><button class="secondary" id="closeEd">닫기</button></div>
+    <div class="edwrap">
+      <div>
+        <div class="phone"><div class="screen">
+          ${cur ? `<img src="/api/projects/${pid()}/files/${cur.png}?t=${cur.created}" alt="카드 미리보기">` : "<p>아직 그림이 없습니다</p>"}
+          ${probs.map((p, i) => `<div class="pbox ${p.kind}" title="${esc(p.label)}" style="left:${p.box[0] / 10.8}%;top:${p.box[1] / 13.5}%;width:${Math.max(0.5, (p.box[2] - p.box[0]) / 10.8)}%;height:${Math.max(0.5, (p.box[3] - p.box[1]) / 13.5)}%"><span>${i + 1}</span></div>`).join("")}
+        </div></div>
+        <p class="muted" style="text-align:center">실제 휴대폰 폭(360pt) 크기로 보여 줍니다</p>
+      </div>
+      <div class="edform">
+        ${probs.length ? `<div class="error"><b>고칠 곳 ${probs.length}개</b><ol>${probs.map((p) => `<li>${esc(p.label)}</li>`).join("")}</ol>
+          <span class="muted">잘림 → 글자를 줄이거나 크기 '작게' · 배경 겹침 → '글자 위 · 그림 아래' 배치 또는 배경 가림 '강하게'</span></div>`
+          : `<p class="okmsg">✓ 잘리거나 배경과 겹친 줄이 없습니다</p>`}
+        <label>제목<input type="text" id="edTitle" value="${esc(c.title)}"></label>
+        <label>핵심 문장<textarea id="edLine" rows="2">${esc(c.line)}</textarea></label>
+        <label>본문<textarea id="edBody" rows="3">${esc(c.body || "")}</textarea></label>
+        <div class="row">
+          <label>글자 위치 ${sel("edPos", POS, lay.position)}</label>
+          <label>글자 크기 ${sel("edSize", SIZE, lay.size)}</label>
+          <label>글자 영역 색 ${sel("edPalette", PALETTE, lay.palette)}</label>
+          <label>배경 가림(겹쳐 배치만) ${sel("edShade", SHADE, lay.shade)}</label>
+        </div>
+        <button id="edApply" ${state.active_run ? "disabled" : ""}>${state.active_run ? '<span class="spinner"></span>다시 그리는 중…' : "글자 다시 배치 (그림은 그대로)"}</button>
+        <p class="muted">AI를 다시 부르지 않고 몇 초 안에 새 버전을 만듭니다. 고치면 최종 승인은 풀립니다.</p>
+      </div>
+    </div></div></div>`;
 }
 
 async function loadExports() {
@@ -274,6 +317,19 @@ function bind() {
     const b = document.getElementById("revise");
     if (b) { b.disabled = !picked.size; b.textContent = `선택한 ${picked.size}장 수정`; }
   }));
+  document.querySelectorAll(".editCard").forEach((el) => (el.onclick = () => { editing = el.dataset.id; render(); }));
+  on("closeEd", () => { editing = null; render(); });
+  on("edApply", async (e) => {
+    e.target.disabled = true;
+    const v = (id) => document.getElementById(id).value;
+    try {
+      await api("POST", `/api/projects/${pid()}/cards/${editing}/edit`, {
+        title: v("edTitle"), line: v("edLine"), body: v("edBody"),
+        layout: { position: v("edPos"), size: v("edSize"), shade: v("edShade"), palette: v("edPalette") }, version: state.version, requestId: uid(),
+      });
+    } catch (err) { alert(err.message); }
+    refresh();
+  });
   document.querySelectorAll(".retryCard").forEach((el) => (el.onclick = () => { el.disabled = true; revise([el.dataset.id], ""); }));
   on("revise", (e) => { e.target.disabled = true; revise([...picked], document.getElementById("instr").value); });
   loadExports();

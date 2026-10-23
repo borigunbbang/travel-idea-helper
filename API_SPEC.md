@@ -45,6 +45,7 @@ created → researching → selecting → deep_research ⇄ waiting_for_user
 | `POST /api/projects/{id}/answers` | `{questionId, version, answer, requestId}` | `{accepted, stage}` | 409 오래된 질문 |
 | `POST /api/projects/{id}/approve` | `{stage: storyboard\|final, version, requestId}` | storyboard: 카드 생성 `{runId}` / final: `{approved, files}` | 409 `wrong_stage`, `checks_failed`(점검 실패 카드 목록) |
 | `POST /api/projects/{id}/revisions` | `{cardIds, instruction?, version, requestId}` | `{runId}`. 지정 카드만 새 버전, 최종 승인 해제. instruction이 비면 그림만 재생성(실패 카드 재시도) | 409 |
+| `POST /api/projects/{id}/cards/{cardId}/edit` | `{title, line, body?, layout?, version, requestId}` | `{runId}`. AI 없이 글자·배치만 바꿔 그 카드만 새 버전(그림 재사용), 최종 승인 해제 | 400 빈 제목·잘못된 배치 값, 409 |
 | `POST /api/runs/{id}/cancel` | — | `{status: cancelled}` | 404 |
 | `GET /api/projects/{id}/exports` | — | 최종 승인 버전의 다운로드 목록 `{approvedVersion, files:[{name,url}]}` | 409 미승인 |
 | `GET /api/projects/{id}/files/{path}` | — | 프로젝트 폴더 안 파일(카드 PNG, 내보내기). 폴더 밖 경로는 404 | 404 |
@@ -115,3 +116,6 @@ created → researching → selecting → deep_research ⇄ waiting_for_user
 1. 첫 호출 뒤 60초 안에 이미지 파일이 없으면 `agy --conversation <id> -p "하위 작업이 끝날 때까지 기다려…"`로 한 번 이어 묻는다.
 2. 응답에 `429`·`RESOURCE_EXHAUSTED`·`quota`가 있으면 `quota_exceeded`, 그 밖에 파일이 없으면 `image_failed`.
 3. agy가 실패하면 `claude -p … --tools "" --json-schema <도형 스키마>`로 그림을 도형 목록으로 받고 Pillow가 1080×1350 PNG로 그린다(`cards/<id>/v<n>/fallback/`). 이것도 실패하면 카드는 `failed`이고 두 실패 이유를 함께 보여 준다.
+
+### 카드 버전의 배치와 문제 위치
+버전마다 `layout`(position·size·shade)과 `problems = [{kind: clip|overlap|contrast, label, box:[x0,y0,x1,y1]}]`를 저장한다. box는 1080×1350 카드 기준 픽셀이며, 화면의 휴대폰 미리보기가 이 위치에 상자를 그린다.

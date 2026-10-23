@@ -222,6 +222,49 @@ def revisions(pid: str, body: Revision):
     return idempotent(pid, body.requestId, body.model_dump(), go)
 
 
+class CardEdit(BaseModel):
+    title: str
+    line: str
+    body: str = ""
+    layout: dict = {}
+    version: int
+    requestId: str
+
+
+@app.post("/api/projects/{pid}/cards/{cid}/edit")
+def edit_card(pid: str, cid: str, body: CardEdit):
+    """AI를 부르지 않고 글자와 배치만 바꿔 다시 그린다. 그림은 그대로 쓴다."""
+    load(pid)
+
+    def go():
+        d = store.get_project(pid)
+        check_version(d, body.version)
+        if store.active_run(pid):
+            err(409, "already_running", "이미 진행 중인 작업이 있습니다.")
+        if d["stage"] not in ("producing", "final_review", "approved"):
+            err(409, "wrong_stage", "카드를 고칠 단계가 아닙니다.")
+        if not body.title.strip() or not body.line.strip():
+            err(400, "empty_text", "제목과 핵심 문장은 비울 수 없습니다.")
+        bad = {k: v for k, v in body.layout.items()
+               if (k, v) not in {("position", "split"), ("position", "top"), ("position", "bottom"), ("size", "small"), ("size", "normal"),
+                                 ("size", "large"), ("shade", "light"), ("shade", "normal"), ("shade", "strong"),
+                                 ("position", "picture_top"), ("palette", "match"), ("palette", "dark")}}
+        if bad:
+            err(400, "bad_layout", f"알 수 없는 배치 값: {bad}")
+        if cid not in {c["id"] for c in d["cards"]}:
+            err(404, "not_found", "카드가 없습니다.")
+
+        def f(x):
+            x.update(stage="producing", approved=None, error=None)  # 고치면 최종 승인 해제
+            for c in x["cards"]:
+                if c["id"] == cid:
+                    c.update(title=body.title.strip(), line=body.line.strip(), body=body.body.strip(),
+                             layout={**c.get("layout", {}), **body.layout}, status="pending", error=None)
+        store.update_project(pid, f)
+        return {"runId": worker.produce(pid, {cid: False})}
+    return idempotent(pid, body.requestId, body.model_dump(), go)
+
+
 @app.get("/api/projects/{pid}/exports")
 def exports(pid: str):
     d = load(pid)

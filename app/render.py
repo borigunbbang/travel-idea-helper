@@ -59,6 +59,14 @@ def _cover(bg):
     return bg.crop((left, top, left + W, top + H))
 
 
+def _cover_to(img, w, h):
+    scale = max(w / img.width, h / img.height)
+    img = img.resize((max(w, round(img.width * scale)), max(h, round(img.height * scale))), Image.LANCZOS)
+    left = (img.width - w) // 2
+    top = (img.height - h) // 3  # 세로로 남으면 위를 조금 더 잘라 아래 소재를 살린다
+    return img.crop((left, top, left + w, top + h))
+
+
 def _luminance(rgb):
     def ch(c):
         c /= 255
@@ -72,78 +80,175 @@ def _contrast(fg, bg):
     return (a + 0.05) / (b + 0.05)
 
 
-def _region_contrast(canvas, box):
-    if box[3] <= box[1]:
+DEFAULT_LAYOUT = {"position": "split", "size": "normal", "shade": "normal", "palette": "match"}
+PANEL = (16, 22, 40)  # 나눠 배치의 글자 영역 색
+EMPTY_TOP = 0.30  # 그림 요청에서 비워 두게 한 윗부분 비율(35%) 중 잘라 낼 만큼
+SIZE_FACTOR = {"small": 0.88, "normal": 1.0, "large": 1.12}
+SHADE_ALPHA = {"light": 150, "normal": 215, "strong": 245}
+
+
+def _worst_contrast(canvas, box, fg=(255, 255, 255)):
+    """글자 줄이 놓일 자리 배경의 밝은 쪽·어두운 쪽(상·하위 10%)과 글자색의 대비 중 낮은 값."""
+    x0, y0, x1, y1 = (max(0, int(v)) for v in box)
+    if x1 <= x0 or y1 <= y0:
         return 99.0
-    med = tuple(int(v) for v in ImageStat.Stat(canvas.crop(box)).median)
-    return _contrast((255, 255, 255), med)
+    hist = canvas.crop((x0, y0, min(x1, W), min(y1, H))).convert("L").histogram()
+    total = sum(hist)
+
+    def pct(q):
+        acc = 0
+        for v in range(256):
+            acc += hist[v]
+            if acc >= total * q:
+                return v
+        return 255
+    lo, hi = pct(0.10), pct(0.90)
+    return min(_contrast(fg, (lo, lo, lo)), _contrast(fg, (hi, hi, hi)))
 
 
-def render(card, bg_path, out_path, index, total, searched_at, image_kind):
-    """위: 역할·제목·핵심 문장 / 가운데: 설명 그림 / 아래: 본문 띠와 출처 띠."""
-    canvas = _cover(Image.open(bg_path))
+DARK_TEXT = {"tag": (18, 110, 100), "title": (20, 26, 46), "line": (38, 46, 68), "body": (58, 66, 88), "foot": (80, 86, 104)}
+LIGHT_TEXT = {"tag": (120, 220, 210), "title": (255, 255, 255), "line": (235, 238, 245), "body": (225, 230, 240), "foot": (200, 205, 215)}
+
+
+def _panel_color(src):
+    """그림의 비워 둔 윗부분(배경색)을 뽑아 글자 영역 색으로 쓴다."""
+    top = src.crop((0, 0, src.width, int(src.height * 0.2)))
+    return tuple(int(v) for v in ImageStat.Stat(top).median)
+
+
+def render(card, bg_path, out_path, index, total, searched_at, image_kind, layout=None):
+    """배경 그림 위에 글자를 따로 그린다.
+    position=split(기본): 위 단색 영역에 글자를 모두, 아래에 그림을 덮개 없이(그림의 빈 윗부분은 잘라 냄)
+    position=top: 위(역할·제목·핵심 문장) / 가운데 그림 / 아래 본문 띠
+    position=bottom: 위는 그림만, 아래 띠에 제목·핵심 문장·본문을 모아서
+    잘림·겹침·대비가 문제인 줄은 problems에 위치(box)와 함께 남긴다."""
+    lay = {**DEFAULT_LAYOUT, **(layout or {})}
+    k = SIZE_FACTOR.get(lay["size"], 1.0)
+    alpha = SHADE_ALPHA.get(lay["shade"], 215)
+    src = Image.open(bg_path).convert("RGB")
+    canvas = _cover(src)
     width = W - 2 * MARGIN
+    sz = lambda v: int(round(v * k))
 
-    # 글자 크기와 줄을 먼저 정해 영역 높이를 계산한다
-    tf, tsize, tlines, t_over = _fit(card["title"], True, 72, 56, 3, width)
-    lf, lsize, llines, l_over = _fit(card["line"], MEDIUM, 44, 38, 3, width)
+    tf, tsize, tlines, t_over = _fit(card["title"], True, sz(72), sz(56), 3, width)
+    lf, lsize, llines, l_over = _fit(card["line"], MEDIUM, sz(44), sz(38), 3, width)
     body = card.get("body", "").strip()
-    bf, bsize, blines, b_over = _fit(body, False, 38, 36, 4, width) if body else (None, 36, [], False)
-
-    top_bottom = MARGIN + 60 + len(tlines[:3]) * int(tsize * 1.25) + 24 + len(llines[:3]) * int(lsize * 1.45)
+    bf, bsize, blines, b_over = _fit(body, False, sz(38), sz(36), 4, width) if body else (None, sz(36), [], False)
+    th, lh, bh = int(tsize * 1.25), int(lsize * 1.45), int(bsize * 1.5)
+    tag_h = 60
+    head_h = tag_h + len(tlines[:3]) * th + 24 + len(llines[:3]) * lh
+    body_h = len(blines[:4]) * bh
     foot_top = H - 150
-    body_h = len(blines[:4]) * int(bsize * 1.5)
-    body_top = foot_top - 40 - body_h if blines else foot_top
 
-    # 대비용 그늘: 위쪽 그라데이션, 본문 띠, 출처 띠
+    split = lay["position"] in ("split", "picture_top")
+    panel = _panel_color(src) if lay.get("palette") == "match" else PANEL
+    colors = DARK_TEXT if split and _luminance(panel) > 0.35 else LIGHT_TEXT
+    text_h = head_h + (24 + body_h if blines else 0)
+
+    # 블록 위치 정하기
+    if split:
+        foot_top = H - 120
+        cut = src.crop((0, int(src.height * EMPTY_TOP), src.width, src.height))  # 비워 둔 윗부분은 잘라 냄
+        if lay["position"] == "split":  # 글자 위, 그림 아래
+            head_y = MARGIN
+            pic_top = head_y + text_h + 50
+            pic_bottom = foot_top
+        else:  # 그림 위, 글자 아래
+            pic_top = 0
+            head_y = foot_top - 40 - text_h
+            pic_bottom = head_y - 50
+        body_y = head_y + head_h + 24
+        clear_top, clear_bottom = pic_top, pic_bottom
+        stacked_over = pic_bottom - pic_top < 300  # 그림 자리가 너무 작으면 문제로 본다
+        canvas = Image.new("RGB", (W, H), panel)
+        canvas.paste(_cover_to(cut, W, max(1, pic_bottom - pic_top)), (0, pic_top))
+    elif lay["position"] == "bottom":
+        panel_top = foot_top - 40 - head_h - (24 + body_h if blines else 0)
+        head_y, body_y = panel_top, panel_top + head_h + 24
+        clear_top, clear_bottom = MARGIN, panel_top - 36  # 그림이 보이는 영역
+        stacked_over = panel_top - 36 < MARGIN
+    else:
+        head_y = MARGIN
+        body_y = foot_top - 40 - body_h if blines else foot_top
+        clear_top, clear_bottom = head_y + head_h, (body_y - 36 if blines else foot_top)
+        stacked_over = clear_bottom - clear_top < 20
+
+    # 대비용 그늘(나눠 배치는 글자가 단색 위에 있어 그림을 덮지 않고, 출처 띠만 둔다)
     shade = Image.new("L", (W, H), 0)
     sd = ImageDraw.Draw(shade)
-    fade = top_bottom + 120
-    for y in range(min(fade, H)):
-        sd.line([(0, y), (W, y)], fill=int(215 * (1 - max(0, y - top_bottom) / 120)) if y > top_bottom else 215)
-    if blines:
-        sd.rectangle([0, body_top - 36, W, foot_top], fill=200)
-    sd.rectangle([0, foot_top, W, H], fill=225)
+    if split:
+        pass
+    elif lay["position"] == "bottom":
+        for y in range(max(0, head_y - 156), head_y - 36):
+            sd.line([(0, y), (W, y)], fill=int(alpha * (y - (head_y - 156)) / 120))
+        sd.rectangle([0, head_y - 36, W, foot_top], fill=alpha)
+    else:
+        fade_end = head_y + head_h
+        for y in range(min(fade_end + 120, H)):
+            sd.line([(0, y), (W, y)], fill=alpha if y <= fade_end else int(alpha * (1 - (y - fade_end) / 120)))
+        if blines:
+            sd.rectangle([0, body_y - 36, W, foot_top], fill=max(0, alpha - 15))
+    if not split:
+        sd.rectangle([0, foot_top, W, H], fill=225)
     canvas = Image.composite(Image.new("RGB", (W, H), (8, 10, 20)), canvas, shade)
+    if split:  # 출처 띠는 글자 영역과 같은 색
+        ImageDraw.Draw(canvas).rectangle([0, foot_top, W, H], fill=panel)
     d = ImageDraw.Draw(canvas)
 
-    d.text((MARGIN, MARGIN), f"{card['role']}  {index}/{total}", font=_font(30, True), fill=(120, 220, 210))
-    y = MARGIN + 60
-    for ln in tlines[:3]:
-        d.text((MARGIN, y), ln, font=tf, fill=(255, 255, 255))
-        y += int(tsize * 1.25)
-    y += 24
-    for ln in llines[:3]:
-        d.text((MARGIN, y), ln, font=lf, fill=(235, 238, 245))
-        y += int(lsize * 1.45)
-    y = body_top
-    for ln in blines[:4]:
-        d.text((MARGIN, y), ln, font=bf, fill=(225, 230, 240))
-        y += int(bsize * 1.5)
+    problems = []
+
+    def draw_lines(lines, font, x, y, step, color, over, max_lines, label):
+        shown = lines[:max_lines]
+        for i, ln in enumerate(shown):
+            if over and i == len(shown) - 1:
+                ln = ln.rstrip() + "…"
+            box = (x, y, x + font.getlength(ln), y + step)
+            c = _worst_contrast(canvas, box, color)
+            if c < 4.5:
+                problems.append({"kind": "contrast", "label": f"{label} {i+1}번째 줄이 배경과 겹쳐 잘 안 보임(대비 {c:.1f}:1)", "box": [int(v) for v in box]})
+            d.text((x, y), ln, font=font, fill=color)
+            y += step
+        if over:
+            problems.append({"kind": "clip", "label": f"{label}이(가) {len(lines)}줄이라 {max_lines}줄 뒤가 잘림", "box": [x, int(y - step), W - MARGIN, int(y)]})
+        return y
+
+    d.text((MARGIN, head_y), f"{card['role']}  {index}/{total}", font=_font(30, True), fill=colors["tag"])
+    y = draw_lines(tlines, tf, MARGIN, head_y + tag_h, th, colors["title"], t_over, 3, "제목")
+    draw_lines(llines, lf, MARGIN, y + 24, lh, colors["line"], l_over, 3, "핵심 문장")
+    if blines:
+        draw_lines(blines, bf, MARGIN, body_y, bh, colors["body"], b_over, 4, "본문")
+    if stacked_over:
+        problems.append({"kind": "overlap", "label": "글자 블록끼리 겹치거나 화면 위로 넘침",
+                         "box": [MARGIN, max(MARGIN, clear_bottom), W - MARGIN, clear_top]})
 
     ff = _font(30)
     domains = ", ".join(dict.fromkeys(urlparse(u).netloc.removeprefix("www.") for u in card["sources"] if u.startswith("http")))
     foot1 = f"출처: {domains}" if domains else "출처: 없음"
     foot2 = f"조사 기준 {searched_at[:10]} · " + ("AI 생성 이미지" if image_kind == "generated" else "모의 이미지")
     f1 = _wrap(foot1, ff, width)
-    d.text((MARGIN, H - 128), f1[0] + (" …" if len(f1) > 1 else ""), font=ff, fill=(200, 205, 215))
-    d.text((MARGIN, H - 80), foot2, font=ff, fill=(200, 205, 215))
+    fy = H - 100 if split else H - 128
+    d.text((MARGIN, fy), f1[0] + (" …" if len(f1) > 1 else ""), font=ff, fill=colors["foot"])
+    d.text((MARGIN, fy + 48), foot2, font=ff, fill=colors["foot"])
     canvas.save(out_path, "PNG")
 
-    # 결과 파일 검사
     with Image.open(out_path) as im:
         size, fmt = im.size, im.format
-    ratio = round(min(_region_contrast(canvas, (MARGIN, MARGIN, W - MARGIN, top_bottom)),
-                      _region_contrast(canvas, (MARGIN, body_top, W - MARGIN, body_top + body_h))), 2)
-    overflow = t_over or l_over or b_over or top_bottom > (body_top - 36 if blines else foot_top) - 20
-    gap = (body_top - 36 if blines else foot_top) - top_bottom
     phone = PHONE_WIDTH / W
     small = min(lsize, bsize if blines else lsize)
+    clips = [p for p in problems if p["kind"] in ("clip", "overlap")]
+    lows = [p for p in problems if p["kind"] == "contrast"]
+    gap = clear_bottom - clear_top
+    if split:
+        shown = gap / H
+        pic_detail = f"그림이 덮개 없이 보이는 높이 {gap}px(카드의 {shown:.0%})"
+    else:
+        shown = gap / H
+        pic_detail = f"그림이 가리지 않고 보이는 높이 {gap}px(카드의 {shown:.0%}). 나머지는 글자 띠가 덮음"
     return {
+        "picture": {"ok": shown >= 0.4, "detail": pic_detail + ("" if shown >= 0.4 else " — 40% 미만, 글자를 줄이거나 '나눠 배치'를 쓰세요")},
         "file": {"ok": fmt == "PNG" and size == (W, H), "detail": f"{fmt} {size[0]}×{size[1]}"},
-        "overflow": {"ok": not overflow,
-                     "detail": f"넘침 없음, 그림이 보이는 높이 {gap}px" if not overflow else "글자가 영역을 넘치거나 위아래 글자가 겹침"},
-        "contrast": {"ok": ratio >= 4.5, "detail": f"글자 영역 최저 대비 {ratio}:1 (기준 4.5:1)"},
+        "overflow": {"ok": not clips, "detail": f"넘침 없음, 그림이 보이는 높이 {gap}px" if not clips else " / ".join(p["label"] for p in clips)},
+        "contrast": {"ok": not lows, "detail": "모든 줄 대비 4.5:1 이상" if not lows else " / ".join(p["label"] for p in lows)},
         "phone": {"ok": tsize * phone >= MIN_PHONE_PX["title"] and small * phone >= MIN_PHONE_PX["body"],
                   "detail": f"휴대폰 폭 {PHONE_WIDTH}pt 환산 제목 {tsize * phone:.0f}px·핵심/본문 {small * phone:.0f}px"},
-    }
+    }, problems, lay

@@ -84,7 +84,8 @@ def _make_card(pid, card, regenerate, cancel, backends):
             vdir.mkdir(parents=True, exist_ok=True)
             bg, meta = store.project_dir(pid) / prev["bg"], prev["image"]
         png = vdir / "card.png"
-        checks = render(card, bg, png, card["index"], len(d["cards"]), d["research"]["searched_at"], meta["kind"])
+        checks, problems, layout = render(card, bg, png, card["index"], len(d["cards"]), d["research"]["searched_at"],
+                                          meta["kind"], card.get("layout"))
         checks["sources"] = source_check(card, known_urls(d))
     except ImageError as e:
         _set_card(pid, card["id"], status="failed", error={"kind": e.kind, "message": str(e)})
@@ -99,6 +100,7 @@ def _make_card(pid, card, regenerate, cancel, backends):
     version = {"v": v, "title": card["title"], "line": card["line"], "body": card.get("body", ""),
                "sources": card["sources"], "image_role": card.get("image_role", ""), "image_plan": card["image_plan"], "bg": str(Path(bg).resolve().relative_to(root)),
                "png": str(png.resolve().relative_to(root)), "image": meta, "checks": checks,
+               "problems": problems, "layout": layout,
                "created": datetime.now().isoformat(timespec="seconds")}
 
     def f(doc):
