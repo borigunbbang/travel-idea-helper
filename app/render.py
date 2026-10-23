@@ -9,6 +9,8 @@ W, H = 1080, 1350
 MARGIN = 80
 PHONE_WIDTH = 360  # 휴대폰 화면 폭(pt)에서의 가독성 기준
 MIN_PHONE_PX = {"title": 18, "body": 12}
+# 카드 픽셀로 바꾼 최소 글자 크기(제목 54px, 핵심 문장·본문 36px). '작게'를 골라도 이보다 작아지지 않는다
+FLOOR = {k: -(-v * W // PHONE_WIDTH) for k, v in MIN_PHONE_PX.items()}
 
 
 def _font(size, weight=REGULAR):
@@ -133,9 +135,9 @@ def render(card, bg_path, out_path, index, total, searched_at, image_kind, layou
     src = Image.open(bg_path).convert("RGB")
     canvas = _cover(src)
     width = W - 2 * MARGIN
-    sz = lambda v: int(round(v * k))
+    sz = lambda v, part="body": max(FLOOR[part], int(round(v * k)))
 
-    tf, tsize, tlines, t_over = _fit(card["title"], True, sz(72), sz(56), 3, width)
+    tf, tsize, tlines, t_over = _fit(card["title"], True, sz(72, "title"), sz(56, "title"), 3, width)
     lf, lsize, llines, l_over = _fit(card["line"], MEDIUM, sz(44), sz(38), 3, width)
     body = card.get("body", "").strip()
     bf, bsize, blines, b_over = _fit(body, False, sz(38), sz(36), 4, width) if body else (None, sz(36), [], False)
@@ -263,12 +265,16 @@ def render(card, bg_path, out_path, index, total, searched_at, image_kind, layou
         checks["background"] = {"ok": dist <= 60, "detail": (f"그림 배경이 통일 배경색({lay['bg']})과 같음" if dist <= 60
                                 else f"그림 배경({'#%02X%02X%02X' % img_bg})이 통일 배경색({lay['bg']})과 다름 — 그림 다시 만들기 권장")}
     return checks | {
-        "picture": {"ok": shown >= 0.4, "detail": pic_detail + ("" if shown >= 0.4 else " — 40% 미만, 글자를 줄이거나 '나눠 배치'를 쓰세요")},
+        "picture": {"ok": shown >= 0.4, "detail": pic_detail + ("" if shown >= 0.4 else
+                    f" — 40% 미만. 글이 길어서입니다. 핵심 문장이나 본문을 줄이세요(한 줄 줄면 그림이 약 {bh}px 커짐)" if split
+                    else " — 40% 미만. 글을 줄이거나 '글자 위 · 그림 아래' 배치를 쓰세요")},
         "file": {"ok": fmt == "PNG" and size == (W, H), "detail": f"{fmt} {size[0]}×{size[1]}"},
         "overflow": {"ok": not clips, "detail": f"넘침 없음, 그림이 보이는 높이 {gap}px" if not clips else " / ".join(p["label"] for p in clips)},
         "contrast": {"ok": not lows, "detail": "모든 줄 대비 4.5:1 이상" if not lows else " / ".join(p["label"] for p in lows)},
         "phone": {"ok": tsize * phone >= MIN_PHONE_PX["title"] and small * phone >= MIN_PHONE_PX["body"],
-                  "detail": f"휴대폰 폭 {PHONE_WIDTH}pt 환산 제목 {tsize * phone:.0f}px·핵심/본문 {small * phone:.0f}px"},
+                  "detail": f"휴대폰 폭 {PHONE_WIDTH}pt 환산 제목 {tsize * phone:.0f}px·핵심/본문 {small * phone:.0f}px"
+                  + ("" if tsize * phone >= MIN_PHONE_PX["title"] and small * phone >= MIN_PHONE_PX["body"]
+                     else f" — 기준 제목 {MIN_PHONE_PX['title']}px·본문 {MIN_PHONE_PX['body']}px. 글자 크기를 '보통' 이상으로 하세요")},
     }, problems, lay, {
         "phone_px": {"title": round(tsize * phone), "line": round(lsize * phone), "body": round(bsize * phone) if blines else None},
         "lines": {"title": len(tlines), "line": len(llines), "body": len(blines)},

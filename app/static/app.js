@@ -258,7 +258,7 @@ function changesHtml(prev, cur) {
 
 const PALETTE = { match: "그림 배경색", dark: "남색" };
 const POS = { split: "글자 위 · 그림 아래 (겹치지 않게)", picture_top: "그림 위 · 글자 아래 (겹치지 않게)", top: "그림 위에 겹쳐서: 위(제목)·아래(본문)", bottom: "그림 위에 겹쳐서: 모두 아래 띠에" };
-const SIZE = { small: "작게", normal: "보통", large: "크게" };
+const SIZE = { small: "작게 (휴대폰 최소 크기까지만)", normal: "보통", large: "크게" };
 const SHADE = { light: "약하게", normal: "보통", strong: "강하게" };
 
 function renderEditor(c) {
