@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "cardnews", "runtimeExecutable": ".venv/bin/python", "runtimeArgs": ["-m", "app.main"], "port": 8765 }
+  ]
+}
