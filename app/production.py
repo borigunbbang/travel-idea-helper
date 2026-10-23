@@ -32,6 +32,11 @@ def pick_card_bg(style):
     return max(hexes, key=lambda h: _luminance(_hex(h))).upper() if hexes else "#F5EFE0"
 
 
+def source_dates(doc):
+    """출처 URL별 게시일. 1차 조사에서 원문 게시일을 확인한 대표 URL만 날짜가 있다."""
+    return {c["url"]: c.get("published") for c in doc["candidates"]}
+
+
 def known_urls(doc):
     urls = set()
     for c in doc["candidates"]:
@@ -141,9 +146,12 @@ def produce(pid, targets, cancel, backends):
     finish(pid)
 
 
-def finish(pid):
+def finish(pid, keep_error=False):
+    """keep_error: 카드는 모두 완성이어도 앞에서 남긴 오류(예: 수정 요청 실패)를 지우지 않는다."""
     def f(d):
         failed = [c for c in d["cards"] if c["status"] != "done"]
+        if failed and any(c["status"] in ("pending", "running") for c in failed) and keep_error:
+            return  # 아직 다른 작업이 남아 있으면 판정하지 않는다
         if failed:
             kinds = {c["error"]["kind"] for c in failed if c.get("error")}
             kind = "auth_required" if "auth_required" in kinds else "image_failed"
@@ -151,7 +159,8 @@ def finish(pid):
                 f"{c['index']}번({(c.get('error') or {}).get('message', '대기')})" for c in failed), "action": "실패한 카드 재시도"}
             d["stage"] = "producing"
         else:
-            d["error"] = None
+            if not keep_error:
+                d["error"] = None
             d["stage"] = "final_review"
     store.update_project(pid, f)
 
@@ -179,12 +188,13 @@ def export(pid):
     files, credits, lines = [], [], [f"# {d['topic']} 카드뉴스 출처 기록", "",
                                      f"- 조사 기준 시각: {d['research']['searched_at']}",
                                      f"- 조사 기간: 최근 {d['research']['period_days']}일", ""]
+    dates = source_dates(d)
     for c in d["cards"]:
         ver = c["versions"][ap["cards"][c["id"]] - 1]
         name = f"card_{c['index']:02d}.png"
         (out / name).write_bytes((root / ver["png"]).read_bytes())
         files.append(name)
-        srcs = [f"- {u}" for u in ver["sources"]] or ["- 출처 없음"]
+        srcs = [f"- {u} (게시일: {dates.get(u) or '미확인'})" for u in ver["sources"]] or ["- 출처 없음"]
         lines += [f"## {c['index']}. [{c['role']}] {ver['title']}", *srcs, ""]
         credits.append({"card": name, **{k: ver["image"].get(k) for k in ("kind", "tool", "created", "prompt", "conversation_id", "fallback_reason", "note")}})
     (out / "sources.md").write_text("\n".join(lines))

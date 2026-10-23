@@ -71,20 +71,22 @@ class MockEngine(Engine):
             },
             "storyboard": [
                 {"role": "표지", "title": "[모의] 이번 주 AI 소식", "line": "핵심 3가지만 골랐습니다", "body": "모의 데이터로 만든 카드입니다.", "sources": [], "image_role": "주제를 비유로 소개", "image_plan": "책상 위 노트북과 신문"},
-                {"role": "본문", "title": "[모의] 소식 1", "line": "한 문장 핵심", "body": "핵심을 뒷받침하는 짧은 본문입니다.", "sources": ["mock://1"], "image_role": "개념 설명", "image_plan": "톱니바퀴 두 개가 맞물림"},
-                {"role": "본문", "title": "[모의] 소식 2", "line": "두 번째 핵심", "body": "한 장에 메시지 하나만 담습니다.", "sources": ["mock://2"], "image_role": "과정 도식", "image_plan": "화살표로 이어진 세 단계"},
-                {"role": "본문", "title": "[모의] 소식 3", "line": "세 번째 핵심", "body": "출처가 없는 모의 카드입니다.", "sources": ["mock://3"], "image_role": "비교", "image_plan": "저울 양쪽의 상자"},
+                {"role": "본문", "title": "[모의] 소식 1", "line": "한 문장 핵심", "body": "핵심을 뒷받침하는 짧은 본문입니다.", "sources": ["https://example.com/mock/1"], "image_role": "개념 설명", "image_plan": "톱니바퀴 두 개가 맞물림"},
+                {"role": "본문", "title": "[모의] 소식 2", "line": "두 번째 핵심", "body": "한 장에 메시지 하나만 담습니다.", "sources": ["https://example.com/mock/2"], "image_role": "과정 도식", "image_plan": "화살표로 이어진 세 단계"},
+                {"role": "본문", "title": "[모의] 소식 3", "line": "세 번째 핵심", "body": "출처가 없는 모의 카드입니다.", "sources": ["https://example.com/mock/3"], "image_role": "비교", "image_plan": "저울 양쪽의 상자"},
                 {"role": "요약", "title": "[모의] 정리", "line": "다음에 확인할 것", "body": "원문을 직접 확인하세요.", "sources": [], "image_role": "행동 유도", "image_plan": "체크리스트와 연필"},
             ],
             "visual_style": {"palette": "남색 #1E2A4A, 청록 #2EC4B6, 크림 #F4EBD9", "style": "플랫 벡터 일러스트", "mood": "차분함"},
         }}
 
 
-    def revise(self, session_id, cards, instruction, ctx, cancel):
+    def revise(self, session_id, cards, instruction, ctx, cancel, mode="text"):
         _sleep(1, cancel)
+        if mode == "image":
+            return {"type": "result", "mock": True, "data": [
+                dict(c, image_plan=f"{c['image_plan']} [모의 수정: {instruction}]", regenerate_image=True) for c in cards]}
         return {"type": "result", "mock": True, "data": [
-            dict(c, line=f"{c['line']} [모의 수정: {instruction}]", body=c.get("body", ""),
-                 image_role=c.get("image_role", ""), regenerate_image=False) for c in cards]}
+            dict(c, body=f"[모의 수정: {instruction}] {c.get('body', '')}", regenerate_image=False) for c in cards]}
 
     def _candidates(self, ctx):
         now = datetime.now(timezone.utc)
@@ -205,8 +207,8 @@ class ClaudeCliEngine(Engine):
         return _normalize_deep(out)
 
 
-    def revise(self, session_id, cards, instruction, ctx, cancel):
-        out, _ = self._run(ctx["project_id"], prompts.revise(cards, instruction), prompts.REVISE_SCHEMA,
+    def revise(self, session_id, cards, instruction, ctx, cancel, mode="text"):
+        out, _ = self._run(ctx["project_id"], prompts.revise(cards, instruction, mode), prompts.REVISE_SCHEMA,
                            ["WebFetch"], cancel, session_id=session_id, label="revise")
         if out.get("type") == "error":
             return out

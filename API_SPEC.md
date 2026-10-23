@@ -40,14 +40,15 @@ created → researching → selecting → deep_research ⇄ waiting_for_user
 |---|---|---|---|
 | `POST /api/projects` | `{topic, period_days?=7}` | `{projectId}` | 400 빈 주제 |
 | `GET /api/projects/{id}` | — | 프로젝트 전체(후보·선택·stage·question·cards·error·version·runs) | 404 |
-| `POST /api/projects/{id}/research` | `{requestId, period_days?}` | `{runId, status}` | 409 이미 진행 중 |
+| `POST /api/projects/{id}/research` | `{requestId, period_days?}` | `{runId, status}` | 409 이미 진행 중, 409 `wrong_stage`(후보를 고른 뒤) |
 | `POST /api/projects/{id}/selection` | `{candidateIds[1..3], version}` | 저장된 선택 + 심층 조사 `runId` | 400 개수, 409 stale |
 | `POST /api/projects/{id}/answers` | `{questionId, version, answer, requestId}` | `{accepted, stage}` | 409 오래된 질문 |
-| `POST /api/projects/{id}/approve` | `{stage: storyboard\|final, version, requestId}` | storyboard: 카드 생성 `{runId}` / final: `{approved, files}` | 409 `wrong_stage`, `checks_failed`(점검 실패 카드 목록) |
-| `POST /api/projects/{id}/revisions` | `{cardIds, instruction?, version, requestId}` | `{runId}`. 지정 카드만 새 버전, 최종 승인 해제. instruction이 비면 그림만 재생성(실패 카드 재시도) | 409 |
+| `POST /api/projects/{id}/approve` | `{stage: storyboard\|final, version, requestId}` | storyboard: 카드 생성 `{runId}` / final: `{approved, files, checkRunId}`(내보낸 파일 점검 작업) | 409 `wrong_stage`, `checks_failed`(점검 실패 카드 목록) |
+| `POST /api/projects/{id}/revisions` | `{cardIds, instruction?, mode?: text\|image, version, requestId}` | `{runId, mode}`. 지정 카드만 새 버전, 최종 승인 해제. `text`: AI가 글자만 고치고 그림 재사용(instruction 필수). `image`: 글자는 두고 그림만 다시(instruction이 있으면 그릴 내용을 먼저 고침). mode가 없으면 instruction이 있을 때 text, 없을 때 image | 400 `empty_instruction`·`bad_mode`, 409 |
 | `POST /api/projects/{id}/cards/{cardId}/edit` | `{title, line, body?, layout?, version, requestId}` | `{runId}`. AI 없이 글자·배치만 바꿔 그 카드만 새 버전(그림 재사용), 최종 승인 해제 | 400 빈 제목·잘못된 배치 값, 409 |
 | `POST /api/runs/{id}/cancel` | — | `{status: cancelled}` | 404 |
-| `GET /api/projects/{id}/exports` | — | 최종 승인 버전의 다운로드 목록 `{approvedVersion, files:[{name,url}]}` | 409 미승인 |
+| `GET /api/projects/{id}/exports` | — | 최종 승인 버전의 다운로드 목록 `{approvedVersion, check, files:[{name,url}]}`. `check`는 내보낸 파일 점검 결과(점검 중이면 null) | 409 미승인 |
+| `POST /api/projects/{id}/exports/check` | — | `{runId}`. 내보낸 파일 점검을 다시 함 | 409 미승인·진행 중 |
 | `GET /api/projects/{id}/files/{path}` | — | 프로젝트 폴더 안 파일(카드 PNG, 내보내기). 폴더 밖 경로는 404 | 404 |
 
 ## requestId 중복 처리
@@ -121,3 +122,19 @@ created → researching → selecting → deep_research ⇄ waiting_for_user
 버전마다 `layout`(position·size·shade)과 `problems = [{kind: clip|overlap|contrast, label, box:[x0,y0,x1,y1]}]`를 저장한다. box는 1080×1350 카드 기준 픽셀이며, 화면의 휴대폰 미리보기가 이 위치에 상자를 그린다.
 
 프로젝트에는 스토리보드 승인 때 `card_bg`(예: `#F5EFE0`)가 저장된다. 모든 카드의 글자 영역과 그림 요청 배경에 같은 색을 쓰고, 카드 점검에 `background`(그림 배경이 `card_bg`와 같은지)가 추가된다.
+
+## 내보낸 파일 점검 (`export_check`)
+최종 승인 직후 `verify` 작업이 `export/approved-v<n>/`의 파일과 `cardnews.zip`을 다시 열어 점검하고, 결과를 프로젝트의 `export_check`와 같은 폴더의 `check_report.json`·`check_report.md`에 남긴다.
+```json
+{ "checked_at": "...", "approved_version": 81, "counts": {"pass": 40, "fail": 0, "unverified": 12},
+  "items": [{ "area": "누락|글자 잘림|출처|날짜", "card": 3, "name": "PNG 파일", "status": "pass|fail|unverified",
+              "detail": "PNG 1080×1350, 승인한 v4와 같은 파일", "todo": "사람이 확인할 것(미확인·실패일 때)" }] }
+```
+| 영역 | 확인 방법 | 미확인으로 남기는 것 |
+|---|---|---|
+| 누락 | ZIP 무결성, 카드 수만큼 PNG·`sources.md`·`image_credits.json`, PNG 1080×1350, 승인한 버전 파일과 해시 일치, 카드별 출처·이미지 기록(도구·시각·요청문·대체 이유) | — |
+| 글자 잘림 | 내보낸 PNG가 렌더링 때 줄마다 잰 파일과 같으면 그 측정(잘림·겹침·대비) 사용, 글꼴에 없는 글자 | 파일이 다를 때, 사람 눈의 읽기 편함 |
+| 출처 | 출처가 조사 기록의 URL인지, 본문 카드에 출처가 있는지, 링크가 실제로 열리는지(404는 실패) | 자동 접속이 막힌 링크, 숫자·날짜가 든 문장이 원문과 같은지 |
+| 날짜 | 카드의 조사 기준일 표시, 출처 게시일이 조사 기간 안인지, 카드 속 날짜가 조사 기준일 뒤가 아닌지·조사 기록에 있는지, '최신' 표현의 근거 | 게시일을 확인하지 못한 출처, 조사 기록에 없는 날짜 |
+
+수정 요청에서 AI가 대상 카드를 돌려주지 않으면 그 카드는 이전 버전 그대로 두고 `notice`에 적는다.

@@ -96,11 +96,17 @@ function header() {
   if (r) h += `<p class="muted">조사 기준 시각: ${fmt(r.searched_at)} · 기간: 최근 ${r.period_days}일 (${fmt(r.period_start)} ~)</p>`;
   if (state.error) {
     const [label, next] = ERR[state.error.kind] || [state.error.kind, "재시도하세요."];
+    const cardStage = ["producing", "final_review", "approved"].includes(state.stage);
+    const failedCards = cardStage ? state.cards.filter((c) => c.status === "failed") : [];
+    const retry = !cardStage ? `<button class="secondary" id="retry">재시도</button>`
+      : failedCards.length ? `<button class="secondary" id="retry">실패한 ${failedCards.length}장 재시도</button>`
+      : state.stage === "approved" ? `<button class="secondary" id="recheck">내보낸 파일 다시 점검</button>`
+      : `<span class="muted">아래 '카드 고치기'에서 요청을 다시 보내세요.</span>`;
     h += `<div class="error"><b>${esc(label)}</b> — ${esc(state.error.message)}<br>
-      <span class="muted">다음 행동: ${esc(next)}</span><br>
-      <button class="secondary" id="retry">재시도</button></div>`;
+      <span class="muted">다음 행동: ${esc(next)}</span><br>${state.active_run ? "" : retry}</div>`;
   }
-  if (state.active_run) h += `<p><span class="spinner"></span>작업 중… <button class="secondary" id="cancel">취소</button></p>`;
+  if (state.notice) h += `<div class="mock">${esc(state.notice)}</div>`;
+  if (state.active_run) h += `<p><span class="spinner"></span>${state.active_run.kind === "verify" ? "내보낸 파일 점검 중…" : "작업 중…"} <button class="secondary" id="cancel">취소</button></p>`;
   return h;
 }
 
@@ -195,6 +201,7 @@ function renderCards() {
       <dt>본문</dt><dd>${esc(t.body ?? c.body ?? "-")}</dd>
       <dt>그림 계획</dt><dd>${esc(t.image_role ?? c.image_role ?? "")}${(t.image_role ?? c.image_role) ? "<br>" : ""}<span class="muted">${esc(t.image_plan)}</span></dd>
       <dt>출처</dt><dd>${t.sources.length ? t.sources.map((u) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("<br>") : "없음"}</dd></dl></details>`;
+    if (cur && cur.v > 1) h += changesHtml(c.versions[cur.v - 2], cur);
     if (cur) h += `<button class="secondary editCard" data-id="${c.id}" style="width:100%;margin:4px 0">📱 휴대폰 미리보기·글자 고치기${cur.problems?.length ? ` <span class="bad">(문제 ${cur.problems.length})</span>` : ""}</button>`;
     if (cur) {
       h += `<ul class="checks">${Object.entries(cur.checks).map(([k, v]) => `<li class="${v.ok ? "ok" : "bad"}">${v.ok ? "✓" : "✗"} ${CHECK[k] || k}: ${esc(v.detail)}</li>`).join("")}</ul>`;
@@ -206,12 +213,47 @@ function renderCards() {
   h += `</div>`;
   if (editing) h += renderEditor(state.cards.find((c) => c.id === editing));
   if (!state.active_run) {
-    h += `<div class="box"><h2>부분 수정</h2><p class="muted">고칠 카드를 체크하고 요청을 적으세요. 체크하지 않은 카드는 바뀌지 않습니다. 요청을 비우면 그림만 다시 만듭니다.</p>
-      <textarea id="instr" rows="2" placeholder="예: 제목을 더 짧게, 본문에 패치 버전 강조"></textarea>
-      <div class="row" style="margin-top:8px"><button class="secondary" id="revise" ${picked.size ? "" : "disabled"}>선택한 ${picked.size}장 수정</button>
+    h += `<div class="box" id="revbox"><h2>카드 고치기</h2>
+      <p class="muted">카드를 체크하거나 요청에 '3번 카드'처럼 번호를 적으세요. 고르지 않은 카드는 그대로 둡니다.${s === "approved" ? " <b>고치면 최종 승인이 풀려 다시 승인해야 합니다.</b>" : ""}</p>
+      <div class="row">
+        <label class="opt modeopt"><input type="radio" name="rmode" value="text" ${reviseMode === "text" ? "checked" : ""}> <b>글자만 고치기</b> <span class="muted">— 그림은 그대로 씁니다</span></label>
+        <label class="opt modeopt"><input type="radio" name="rmode" value="image" ${reviseMode === "image" ? "checked" : ""}> <b>그림 다시 만들기</b> <span class="muted">— 글자는 그대로, 그 카드 그림만 새로</span></label>
+      </div>
+      <textarea id="instr" rows="2" placeholder="${reviseMode === "text" ? "예: 3번 카드의 본문이 길어. 핵심 조건을 유지하며 두 문장으로 줄여 줘" : "예: 사람 모양이 이상해. 노트북과 그래프만 그려 줘 (비우면 같은 계획으로 다시 그림)"}">${esc(draftInstr)}</textarea>
+      <p class="muted" id="rtarget">${targetText()}</p>
+      <div class="row"><button class="secondary" id="revise" ${reviseTargets().length ? "" : "disabled"}>고치기</button>
       ${s === "final_review" ? `<button id="approveFinal">최종 승인</button>` : ""}</div></div>`;
   }
   return h;
+}
+
+let reviseMode = "text";
+let draftInstr = "";
+
+function numbersInText(t) {
+  return [...t.matchAll(/(\d+)\s*번/g)].map((m) => +m[1]).filter((n) => n >= 1 && n <= state.cards.length);
+}
+
+function reviseTargets() {  // 체크한 카드가 없으면 요청 속 'N번'을 대상으로
+  if (picked.size) return state.cards.filter((c) => picked.has(c.id));
+  const ns = numbersInText(draftInstr);
+  return state.cards.filter((c) => ns.includes(c.index));
+}
+
+function targetText() {
+  const ts = reviseTargets();
+  if (!ts.length) return "대상: 아직 없음 (카드를 체크하거나 요청에 번호를 적으세요)";
+  const other = picked.size ? numbersInText(draftInstr).filter((n) => !ts.some((c) => c.index === n)) : [];
+  return `대상: ${ts.map((c) => c.index + "번").join(", ")} · ${reviseMode === "text" ? "글자만 새 버전, 그림 재사용" : "그림을 새로 만들어 새 버전"}`
+    + (other.length ? ` <span class="bad">(요청에 적힌 ${other.join(", ")}번은 체크되지 않아 고치지 않습니다)</span>` : "");
+}
+
+function changesHtml(prev, cur) {
+  const rows = [["제목", "title"], ["핵심 문장", "line"], ["본문", "body"]]
+    .filter(([, k]) => (prev[k] || "") !== (cur[k] || ""))
+    .map(([t, k]) => `<dt>${t}</dt><dd><del>${esc(prev[k])}</del><br>${esc(cur[k])}</dd>`);
+  const pic = prev.bg === cur.bg ? "그림 그대로" : "그림 새로 만듦";
+  return `<details class="cardtext"><summary>v${prev.v} → v${cur.v} 바뀐 점 · ${pic}</summary>${rows.length ? `<dl class="sbd">${rows.join("")}</dl>` : `<p class="muted">글자 변화 없음</p>`}</details>`;
 }
 
 const PALETTE = { match: "그림 배경색", dark: "남색" };
@@ -287,8 +329,35 @@ async function loadExports() {
   if (!el) return;
   try {
     const r = await api("GET", `/api/projects/${pid()}/exports`);
-    el.innerHTML = `<p>승인 버전 v${r.approvedVersion}</p><ul>${r.files.map((f) => `<li><a href="${f.url}" download>${esc(f.name)}</a></li>`).join("")}</ul>`;
+    const link = (f, label) => `<a href="${f.url}" download>${esc(label || f.name)}</a>`;
+    const by = (re) => r.files.filter((f) => re.test(f.name));
+    const zip = by(/\.zip$/), pngs = by(/\.png$/), recs = by(/^(sources\.md|image_credits\.json)$/), reps = by(/^check_report/);
+    el.innerHTML = `<p>승인 버전 v${r.approvedVersion}</p>
+      ${zip.map((f) => `<p>${link(f, "⬇ 전체 ZIP 내려받기 (cardnews.zip)")}</p>`).join("")}
+      <p><b>카드별 PNG</b> ${pngs.map((f) => link(f)).join(" · ")}</p>
+      <p><b>출처·이미지 사용 기록</b> ${recs.map((f) => link(f)).join(" · ")}</p>
+      ${reps.length ? `<p><b>점검 보고서</b> ${reps.map((f) => link(f)).join(" · ")}</p>` : ""}` + checkHtml(r.check);
+    const b = document.getElementById("recheck2");
+    if (b) b.onclick = async () => { try { await api("POST", `/api/projects/${pid()}/exports/check`); } catch (err) { alert(err.message); } refresh(); };
   } catch (e) { el.textContent = e.message; }
+}
+
+const ST = { pass: ["통과", "ok"], fail: ["실패", "bad"], unverified: ["미확인", "warn"] };
+
+function checkHtml(rep) {
+  if (!rep) return state.active_run ? `<p class="muted"><span class="spinner"></span>내보낸 파일을 다시 열어 점검하는 중…</p>` : "";
+  const c = rep.counts;
+  let h = `<h3>내보낸 파일 점검</h3><p>통과 <b class="okc">${c.pass}</b> · 실패 <b class="bad">${c.fail}</b> · 미확인 <b class="warnc">${c.unverified}</b>
+    <span class="muted">(${fmt(rep.checked_at)}) 미확인은 통과가 아닙니다.</span> ${state.active_run ? "" : `<button class="secondary" id="recheck2">다시 점검</button>`}</p>`;
+  for (const area of ["누락", "글자 잘림", "출처", "날짜"]) {
+    const its = rep.items.filter((i) => i.area === area);
+    const n = (k) => its.filter((i) => i.status === k).length;
+    h += `<details class="cardtext" ${n("fail") ? "open" : ""}><summary>${area} — 통과 ${n("pass")} · 실패 ${n("fail")} · 미확인 ${n("unverified")}</summary><ul class="checks">`
+      + its.map((i) => `<li class="${ST[i.status][1]}">[${ST[i.status][0]}] ${i.card ? i.card + "번 " : ""}${esc(i.name)}: ${esc(i.detail)}</li>`).join("") + `</ul></details>`;
+  }
+  const todos = rep.items.filter((i) => i.todo);
+  if (todos.length) h += `<h3>직접 확인할 것 (${todos.length})</h3><ol class="todo">${todos.map((i) => `<li>${i.card ? i.card + "번 " : ""}${esc(i.todo)}</li>`).join("")}</ol>`;
+  return h;
 }
 
 function renderNotes() {
@@ -318,6 +387,9 @@ function bind() {
   on("widen", () => rerun(30));
   on("widen2", () => rerun(30));
   on("retry", async () => {
+    if (["producing", "final_review", "approved"].includes(state.stage)) {
+      return revise(state.cards.filter((c) => c.status === "failed").map((c) => c.id), "", "image");
+    }
     if (state.stage !== "deep_research") return rerun();
     try { await api("POST", `/api/projects/${pid()}/selection`, { candidateIds: state.selection, version: state.version }); }
     catch (err) { alert(err.message); }
@@ -335,16 +407,23 @@ function bind() {
     catch (err) { alert(err.message); }
     refresh();
   });
-  const revise = async (cardIds, instruction) => {
-    try { await api("POST", `/api/projects/${pid()}/revisions`, { cardIds, instruction, version: state.version, requestId: uid() }); }
-    catch (err) { alert(err.message); }
-    picked = new Set(); refresh();
+  const revise = async (cardIds, instruction, mode) => {
+    try { await api("POST", `/api/projects/${pid()}/revisions`, { cardIds, instruction, mode, version: state.version, requestId: uid() }); }
+    catch (err) { alert(err.message); return refresh(); }
+    picked = new Set(); draftInstr = ""; refresh();
   };
   document.querySelectorAll(".pick").forEach((el) => (el.onchange = () => {
     el.checked ? picked.add(el.dataset.id) : picked.delete(el.dataset.id);
-    const b = document.getElementById("revise");
-    if (b) { b.disabled = !picked.size; b.textContent = `선택한 ${picked.size}장 수정`; }
+    updateTarget();
   }));
+  const updateTarget = () => {
+    const t = document.getElementById("rtarget"), b = document.getElementById("revise");
+    if (t) t.innerHTML = targetText();
+    if (b) b.disabled = !reviseTargets().length;
+  };
+  const instr = document.getElementById("instr");
+  if (instr) instr.oninput = () => { draftInstr = instr.value; updateTarget(); };
+  document.querySelectorAll("input[name=rmode]").forEach((el) => (el.onchange = () => { reviseMode = el.value; render(); }));
   document.querySelectorAll(".editCard").forEach((el) => (el.onclick = () => { editing = el.dataset.id; render(); }));
   on("closeEd", () => { editing = null; render(); });
   on("edPrev", () => moveEditor(-1));
@@ -366,8 +445,18 @@ function bind() {
     } catch (err) { alert(err.message); }
     refresh();
   });
-  document.querySelectorAll(".retryCard").forEach((el) => (el.onclick = () => { el.disabled = true; revise([el.dataset.id], ""); }));
-  on("revise", (e) => { e.target.disabled = true; revise([...picked], document.getElementById("instr").value); });
+  document.querySelectorAll(".retryCard").forEach((el) => (el.onclick = () => { el.disabled = true; revise([el.dataset.id], "", "image"); }));
+  on("revise", (e) => {
+    const ts = reviseTargets();
+    if (reviseMode === "text" && !draftInstr.trim()) return alert("글자를 어떻게 고칠지 적어 주세요.");
+    if (state.stage === "approved" && !confirm("고치면 최종 승인이 풀립니다. 계속할까요?")) return;
+    e.target.disabled = true;
+    revise(ts.map((c) => c.id), draftInstr, reviseMode);
+  });
+  on("recheck", async () => {
+    try { await api("POST", `/api/projects/${pid()}/exports/check`); } catch (err) { alert(err.message); }
+    refresh();
+  });
   loadExports();
   on("cancel", async () => { await api("POST", `/api/runs/${state.active_run.id}/cancel`); refresh(); });
   on("answer", async (e) => {

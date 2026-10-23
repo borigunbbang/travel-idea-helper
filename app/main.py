@@ -88,6 +88,8 @@ def research(pid: str, body: Research):
     def go():
         if store.active_run(pid):
             err(409, "already_running", "이미 진행 중인 작업이 있습니다.")
+        if store.get_project(pid)["stage"] not in ("created", "researching", "selecting"):
+            err(409, "wrong_stage", "후보를 고른 뒤에는 처음 조사를 다시 하지 않습니다. 새 프로젝트를 만드세요.")
 
         def f(d):
             if body.period_days:
@@ -184,9 +186,10 @@ def approve(pid: str, body: Approve):
             issues = production.blocking_issues(d)
             if issues:
                 err(409, "checks_failed", "점검을 통과하지 못한 카드가 있습니다: " + " / ".join(issues))
-            store.update_project(pid, lambda x: x.update(stage="approved", approved={
+            store.update_project(pid, lambda x: x.update(stage="approved", export_check=None, approved={
                 "version": x["version"] + 1, "cards": {c["id"]: c["current"] for c in x["cards"]}}))
-            return {"approved": True, "files": production.export(pid)}
+            files = production.export(pid)
+            return {"approved": True, "files": files, "checkRunId": worker.verify_export(pid)}
         err(400, "bad_stage", "stage는 storyboard 또는 final 입니다.")
     return idempotent(pid, body.requestId, body.model_dump(), go)
 
@@ -194,6 +197,7 @@ def approve(pid: str, body: Approve):
 class Revision(BaseModel):
     cardIds: list[str] = Field(min_length=1)
     instruction: str = ""
+    mode: str = ""  # text: 글자만(그림 그대로) / image: 그림만 다시. 비우면 요청이 있을 때 text, 없을 때 image
     version: int
     requestId: str
 
@@ -212,14 +216,19 @@ def revisions(pid: str, body: Revision):
         ids = {c["id"] for c in d["cards"]}
         if not set(body.cardIds) <= ids:
             err(400, "bad_card", "없는 카드가 포함되어 있습니다.")
+        mode = body.mode or ("text" if body.instruction.strip() else "image")
+        if mode not in ("text", "image"):
+            err(400, "bad_mode", "mode는 text 또는 image 입니다.")
+        if mode == "text" and not body.instruction.strip():
+            err(400, "empty_instruction", "글자를 어떻게 고칠지 적어 주세요.")
 
         def f(x):
-            x.update(stage="producing", approved=None, error=None)  # 수정하면 최종 승인 해제
+            x.update(stage="producing", approved=None, error=None, notice=None, export_check=None)  # 수정하면 최종 승인 해제
             for c in x["cards"]:
                 if c["id"] in body.cardIds:
                     c.update(status="pending", error=None)
         store.update_project(pid, f)
-        return {"runId": worker.revise(pid, body.cardIds, body.instruction)}
+        return {"runId": worker.revise(pid, body.cardIds, body.instruction, mode), "mode": mode}
     return idempotent(pid, body.requestId, body.model_dump(), go)
 
 
@@ -256,7 +265,7 @@ def edit_card(pid: str, cid: str, body: CardEdit):
             err(404, "not_found", "카드가 없습니다.")
 
         def f(x):
-            x.update(stage="producing", approved=None, error=None)  # 고치면 최종 승인 해제
+            x.update(stage="producing", approved=None, error=None, notice=None, export_check=None)  # 고치면 최종 승인 해제
             for c in x["cards"]:
                 if c["id"] == cid:
                     c.update(title=body.title.strip(), line=body.line.strip(), body=body.body.strip(),
@@ -274,8 +283,19 @@ def exports(pid: str):
     root = store.project_dir(pid)
     out = root / "export" / f"approved-v{d['approved']['version']}"
     files = [str(p.relative_to(root)) for p in sorted(out.iterdir())] if out.is_dir() else []
-    return {"approvedVersion": d["approved"]["version"],
+    return {"approvedVersion": d["approved"]["version"], "check": d.get("export_check"),
             "files": [{"name": Path(f).name, "url": f"/api/projects/{pid}/files/{f}"} for f in files]}
+
+
+@app.post("/api/projects/{pid}/exports/check")
+def recheck(pid: str):
+    """내보낸 파일 점검을 다시 한다(링크가 잠깐 안 열렸을 때 등)."""
+    d = load(pid)
+    if not d.get("approved"):
+        err(409, "not_approved", "최종 승인 후 점검할 수 있습니다.")
+    if store.active_run(pid):
+        err(409, "already_running", "이미 진행 중인 작업이 있습니다.")
+    return {"runId": worker.verify_export(pid)}
 
 
 @app.get("/api/projects/{pid}/files/{path:path}")

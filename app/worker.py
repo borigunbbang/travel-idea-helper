@@ -3,7 +3,7 @@ import os
 import threading
 import uuid
 
-from . import production, store
+from . import production, store, verify
 from .engines import get_engine
 
 _cancels = {}  # run_id -> (Event, Engine)
@@ -118,26 +118,58 @@ def produce(pid, targets):
     return launch(pid, "produce", fn)
 
 
-def revise(pid, card_ids, instruction):
-    """선택한 카드만 수정한다. 지시가 비어 있으면 글자는 두고 그림만 다시 만든다(재시도)."""
+TEXT_FIELDS = ("title", "line", "body", "sources")
+IMAGE_FIELDS = ("image_role", "image_plan")
+
+
+def revise(pid, card_ids, instruction, mode):
+    """선택한 카드만 수정한다.
+    mode=text: AI가 글자만 고치고 그림은 이전 것을 그대로 쓴다.
+    mode=image: 글자는 두고 그 카드의 그림만 다시 만든다. 요청이 있으면 AI가 그릴 내용을 먼저 고친다."""
     def fn(engine, cancel):
         d = store.get_project(pid)
-        targets = {c["id"]: True for c in d["cards"] if c["id"] in card_ids}
+        regenerate = mode == "image"
+        targets = {c["id"]: regenerate for c in d["cards"] if c["id"] in card_ids}
         if instruction.strip():
-            cards = [{k: c.get(k, "") for k in ("id", "role", "title", "line", "body", "sources", "image_role", "image_plan")}
+            cards = [{k: c.get(k, "") for k in ("id", "role", *TEXT_FIELDS, *IMAGE_FIELDS)}
                      for c in d["cards"] if c["id"] in card_ids]
-            res = engine.revise(d["session_id"], cards, instruction, {"project_id": pid}, cancel)
+            res = engine.revise(d["session_id"], cards, instruction, {"project_id": pid}, cancel, mode=mode)
             if res["type"] == "error":
                 _apply(pid, res, None)
+                _restore(pid, card_ids)
                 return
             changed = {c["id"]: c for c in res["data"] if c["id"] in card_ids}  # 대상 밖 카드는 무시
+            fields = TEXT_FIELDS if mode == "text" else IMAGE_FIELDS  # 모드 밖의 필드는 AI가 바꿔도 반영하지 않는다
+            missing = [cid for cid in card_ids if cid not in changed]
 
             def f(doc):
                 for c in doc["cards"]:
                     if c["id"] in changed:
                         n = changed[c["id"]]
-                        c.update({k: n[k] for k in ("title", "line", "body", "sources", "image_role", "image_plan") if k in n})
+                        c.update({k: n[k] for k in fields if k in n})
+                if missing:
+                    doc["notice"] = "AI가 수정 결과를 돌려주지 않은 카드는 바꾸지 않았습니다: " + ", ".join(
+                        str(c["index"]) + "번" for c in doc["cards"] if c["id"] in missing)
             store.update_project(pid, f)
-            targets = {cid: bool(n.get("regenerate_image")) for cid, n in changed.items()}
+            _restore(pid, missing)
+            targets = {cid: regenerate for cid in changed}
         production.produce(pid, targets, cancel, cancel.cancellables)
     return launch(pid, "revise", fn)
+
+
+def _restore(pid, card_ids):
+    """수정하지 못한 카드는 이전 버전 그대로 완성 상태로 되돌린다."""
+    def f(doc):
+        for c in doc["cards"]:
+            if c["id"] in card_ids and c["status"] == "pending":
+                c.update(status="done" if c["current"] else "failed", error=None if c["current"] else
+                         {"kind": "engine_failed", "message": "수정하지 못했습니다."})
+    store.update_project(pid, f)
+    production.finish(pid, keep_error=True)
+
+
+def verify_export(pid):
+    """최종 승인 후 내보낸 파일을 다시 열어 점검한다."""
+    def fn(engine, cancel):
+        verify.run(pid, cancel)
+    return launch(pid, "verify", fn)

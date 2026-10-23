@@ -1,13 +1,15 @@
 """SQLite 영속 상태. 프로젝트는 JSON 문서 하나로 저장하고 version으로 동시 변경을 막는다."""
 import hashlib
 import json
+import os
 import sqlite3
 import threading
 import time
 import uuid
 from pathlib import Path
 
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+# 시험할 때는 CARDNEWS_DATA로 별도 폴더를 써서 실제 프로젝트를 건드리지 않는다
+DATA_DIR = Path(os.environ.get("CARDNEWS_DATA") or Path(__file__).resolve().parent.parent / "data").resolve()
 DB_PATH = DATA_DIR / "app.db"
 _lock = threading.RLock()
 

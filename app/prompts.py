@@ -146,15 +146,24 @@ REVISE_SCHEMA = {
 }
 
 
-def revise(cards, instruction):
+REVISE_MODE = {
+    "text": """이번 수정은 '글자만 고치기'다. 그림은 지금 것을 그대로 쓴다.
+title, line, body, sources만 요청대로 고치고 image_role, image_plan은 받은 값 그대로 돌려준다. regenerate_image=false.
+수정 요청에 '몇 문장', '짧게' 같은 조건이 있으면 정확히 지킨다. 줄이더라도 날짜·조건·'예정'·'회사 주장' 같은 단서는 남긴다.""",
+    "image": """이번 수정은 '그림만 다시 만들기'다. 글자는 바꾸지 않는다.
+title, line, body, sources는 받은 값 그대로 두고, 요청에 맞게 image_role, image_plan만 고친다. regenerate_image=true.""",
+}
+
+
+def revise(cards, instruction, mode="text"):
     return f"""사용자가 아래 카드만 수정해 달라고 했다. 다른 카드는 바꾸지 않는다.
 수정 요청: {json.dumps(instruction, ensure_ascii=False)}
 대상 카드:
 {json.dumps(cards, ensure_ascii=False, indent=1)}
 
-대상 카드마다 id를 그대로 두고 title, line, body, sources, image_role, image_plan을 고쳐서 돌려준다.
+{REVISE_MODE[mode]}
+대상 카드마다 id를 그대로 두고 모든 필드를 채워 돌려준다.
 그림체(visual_style)는 다른 카드와 같게 유지한다.
-그림을 바꿔야 하는 요청이면 regenerate_image=true, 글자만 바뀌면 false.
 앞에서 확인한 조사 기록 범위 안에서만 고치고, 확인하지 않은 사실을 새로 넣지 않는다.
 
 {EDITORIAL_RULES}"""

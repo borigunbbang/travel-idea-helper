@@ -166,9 +166,10 @@ class MockImage:
         time.sleep(0.5)
         if cancel.is_set():
             raise InterruptedError
-        im = Image.new("RGB", (1080, 1350))
+        bg = (style or {}).get("background")
+        im = Image.new("RGB", (1080, 1350), bg or "#000000")
         d = ImageDraw.Draw(im)
-        for y in range(1350):
+        for y in range(0 if not bg else 600, 1350):  # 공통 배경색이 있으면 위쪽은 그 색으로 비워 둔다
             c = int(20 + 60 * y / 1350)
             d.line([(0, y), (1080, y)], fill=(c // 2, c // 2, c + 30))
         local = workdir / "source.png"
