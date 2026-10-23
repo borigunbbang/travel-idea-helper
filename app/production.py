@@ -19,6 +19,19 @@ def cards_from_storyboard(storyboard):
             for i, c in enumerate(storyboard)]
 
 
+def pick_card_bg(style):
+    """공통 그림체 색감에서 카드 배경색 하나를 고른다. '바탕·배경'이라고 적힌 색, 없으면 가장 밝은 색."""
+    import re
+    from .render import _hex, _luminance
+    text = (style or {}).get("palette", "")
+    marked = re.findall(r"(?:바탕|배경)[^#,/]*?(#[0-9A-Fa-f]{6})|(#[0-9A-Fa-f]{6})[^,/]*?(?:바탕|배경)", text)
+    for a, b in marked:
+        if a or b:
+            return (a or b).upper()
+    hexes = re.findall(r"#[0-9A-Fa-f]{6}", text)
+    return max(hexes, key=lambda h: _luminance(_hex(h))).upper() if hexes else "#F5EFE0"
+
+
 def known_urls(doc):
     urls = set()
     for c in doc["candidates"]:
@@ -78,14 +91,18 @@ def _make_card(pid, card, regenerate, cancel, backends):
     vdir = store.project_dir(pid) / "cards" / card["id"] / f"v{v}"
     prev = card["versions"][-1] if card["versions"] else None
     try:
+        style = dict(d.get("visual_style") or {}, background=d.get("card_bg"))
         if regenerate or not prev:
-            bg, meta = _generate_image(pid, card, vdir, d.get("visual_style"), cancel, backends)
+            bg, meta = _generate_image(pid, card, vdir, style, cancel, backends)
         else:  # 글자만 바뀐 수정은 이전 배경을 재사용
             vdir.mkdir(parents=True, exist_ok=True)
             bg, meta = store.project_dir(pid) / prev["bg"], prev["image"]
         png = vdir / "card.png"
+        lay = dict(card.get("layout") or {})
+        if d.get("card_bg"):
+            lay["bg"] = d["card_bg"]
         checks, problems, layout = render(card, bg, png, card["index"], len(d["cards"]), d["research"]["searched_at"],
-                                          meta["kind"], card.get("layout"))
+                                          meta["kind"], lay)
         checks["sources"] = source_check(card, known_urls(d))
     except ImageError as e:
         _set_card(pid, card["id"], status="failed", error={"kind": e.kind, "message": str(e)})

@@ -119,3 +119,5 @@ created → researching → selecting → deep_research ⇄ waiting_for_user
 
 ### 카드 버전의 배치와 문제 위치
 버전마다 `layout`(position·size·shade)과 `problems = [{kind: clip|overlap|contrast, label, box:[x0,y0,x1,y1]}]`를 저장한다. box는 1080×1350 카드 기준 픽셀이며, 화면의 휴대폰 미리보기가 이 위치에 상자를 그린다.
+
+프로젝트에는 스토리보드 승인 때 `card_bg`(예: `#F5EFE0`)가 저장된다. 모든 카드의 글자 영역과 그림 요청 배경에 같은 색을 쓰고, 카드 점검에 `background`(그림 배경이 `card_bg`와 같은지)가 추가된다.

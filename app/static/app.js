@@ -170,7 +170,7 @@ function renderStoryboard() {
   return h;
 }
 
-const CHECK = { picture: "그림 보임", file: "파일", overflow: "글자 잘림", contrast: "대비", phone: "휴대폰 가독성", sources: "사실/출처" };
+const CHECK = { background: "배경색 통일", picture: "그림 보임", file: "파일", overflow: "글자 잘림", contrast: "대비", phone: "휴대폰 가독성", sources: "사실/출처" };
 let picked = new Set();
 let editing = null;  // 휴대폰 미리보기·글자 고치기 창을 연 카드 id
 

@@ -175,7 +175,8 @@ def approve(pid: str, body: Approve):
             if d["stage"] != "storyboard_review":
                 err(409, "wrong_stage", "스토리보드를 승인할 단계가 아닙니다.")
             cards = production.cards_from_storyboard(d["storyboard"])
-            store.update_project(pid, lambda x: x.update(cards=cards, stage="producing", error=None, approved=None))
+            bg = d.get("card_bg") or production.pick_card_bg(d.get("visual_style"))
+            store.update_project(pid, lambda x: x.update(cards=cards, stage="producing", error=None, approved=None, card_bg=bg))
             return {"runId": worker.produce(pid, {c["id"]: True for c in cards})}
         if body.stage == "final":
             if d["stage"] != "final_review":

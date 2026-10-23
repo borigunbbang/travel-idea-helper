@@ -31,9 +31,11 @@ class ImageError(Exception):
 
 
 def style_text(style):
-    if not style:
-        return "플랫 벡터 일러스트, 차분한 남색 계열, 단순한 선과 면"
-    return f"색감: {style['palette']} / 그림체: {style['style']} / 분위기: {style['mood']}"
+    bg = (style or {}).get("background")
+    bg_rule = f" / 배경: 전체를 {bg} 단색으로(모든 카드 같은 배경색)" if bg else ""
+    if not style or not style.get("palette"):
+        return "플랫 벡터 일러스트, 차분한 남색 계열, 단순한 선과 면" + bg_rule
+    return f"색감: {style['palette']} / 그림체: {style['style']} / 분위기: {style['mood']}" + bg_rule
 
 
 def build_prompt(card, style=None, ratio="4:5"):
@@ -228,7 +230,7 @@ class ClaudeDrawImage:
         if out.get("type") == "error":
             raise ImageError(out["kind"], f"Claude CLI 그림 설계 실패: {out['message']}")
         scale = 2  # 두 배로 그린 뒤 줄여 가장자리를 부드럽게
-        bg = _color(out.get("background")) or "#1E2A4A"
+        bg = (style or {}).get("background") or _color(out.get("background")) or "#1E2A4A"  # 공통 배경색이 있으면 그 색
         im = Image.new("RGB", (1080 * scale, 1350 * scale), bg)
         d = ImageDraw.Draw(im)
         drawn = 0

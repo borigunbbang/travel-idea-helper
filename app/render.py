@@ -110,6 +110,11 @@ DARK_TEXT = {"tag": (18, 110, 100), "title": (20, 26, 46), "line": (38, 46, 68),
 LIGHT_TEXT = {"tag": (120, 220, 210), "title": (255, 255, 255), "line": (235, 238, 245), "body": (225, 230, 240), "foot": (200, 205, 215)}
 
 
+def _hex(c):
+    c = c.lstrip("#")
+    return tuple(int(c[i:i + 2], 16) for i in (0, 2, 4))
+
+
 def _panel_color(src):
     """그림의 비워 둔 윗부분(배경색)을 뽑아 글자 영역 색으로 쓴다."""
     top = src.crop((0, 0, src.width, int(src.height * 0.2)))
@@ -141,7 +146,13 @@ def render(card, bg_path, out_path, index, total, searched_at, image_kind, layou
     foot_top = H - 150
 
     split = lay["position"] in ("split", "picture_top")
-    panel = _panel_color(src) if lay.get("palette") == "match" else PANEL
+    img_bg = _panel_color(src)
+    if lay.get("palette") == "dark":
+        panel = PANEL
+    elif lay.get("bg"):  # 프로젝트 공통 배경색
+        panel = _hex(lay["bg"])
+    else:
+        panel = img_bg
     colors = DARK_TEXT if split and _luminance(panel) > 0.35 else LIGHT_TEXT
     text_h = head_h + (24 + body_h if blines else 0)
 
@@ -244,7 +255,12 @@ def render(card, bg_path, out_path, index, total, searched_at, image_kind, layou
     else:
         shown = gap / H
         pic_detail = f"그림이 가리지 않고 보이는 높이 {gap}px(카드의 {shown:.0%}). 나머지는 글자 띠가 덮음"
-    return {
+    checks = {}
+    if split and lay.get("bg") and lay.get("palette") != "dark":
+        dist = sum((a - b) ** 2 for a, b in zip(img_bg, panel)) ** 0.5
+        checks["background"] = {"ok": dist <= 60, "detail": (f"그림 배경이 통일 배경색({lay['bg']})과 같음" if dist <= 60
+                                else f"그림 배경({'#%02X%02X%02X' % img_bg})이 통일 배경색({lay['bg']})과 다름 — 그림 다시 만들기 권장")}
+    return checks | {
         "picture": {"ok": shown >= 0.4, "detail": pic_detail + ("" if shown >= 0.4 else " — 40% 미만, 글자를 줄이거나 '나눠 배치'를 쓰세요")},
         "file": {"ok": fmt == "PNG" and size == (W, H), "detail": f"{fmt} {size[0]}×{size[1]}"},
         "overflow": {"ok": not clips, "detail": f"넘침 없음, 그림이 보이는 높이 {gap}px" if not clips else " / ".join(p["label"] for p in clips)},
