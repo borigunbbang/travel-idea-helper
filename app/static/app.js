@@ -226,14 +226,19 @@ function renderEditor(c) {
   const sel = (id, map, val) => `<select id="${id}">${Object.entries(map).map(([v, t]) => `<option value="${v}" ${v === val ? "selected" : ""}>${t}</option>`).join("")}</select>`;
   const probs = cur?.problems || [];
   return `<div class="modal" id="modal"><div class="sheet">
-    <div class="row" style="justify-content:space-between"><h2 style="margin:0">${c.index}번 카드 · 휴대폰 미리보기</h2><button class="secondary" id="closeEd">닫기</button></div>
+    <div class="row" style="justify-content:space-between">
+      <div class="row"><button class="secondary" id="edPrev" ${c.index <= 1 ? "disabled" : ""}>◀ 이전</button>
+        <h2 style="margin:0">${c.index} / ${state.cards.length} · 휴대폰 미리보기</h2>
+        <button class="secondary" id="edNext" ${c.index >= state.cards.length ? "disabled" : ""}>다음 ▶</button></div>
+      <button class="secondary" id="closeEd">닫기</button></div>
     <div class="edwrap">
       <div>
-        <div class="phone"><div class="screen">
+        <div class="phone"><div class="screen" id="phoneScreen">
           ${cur ? `<img src="/api/projects/${pid()}/files/${cur.png}?t=${cur.created}" alt="카드 미리보기">` : "<p>아직 그림이 없습니다</p>"}
           ${probs.map((p, i) => `<div class="pbox ${p.kind}" title="${esc(p.label)}" style="left:${p.box[0] / 10.8}%;top:${p.box[1] / 13.5}%;width:${Math.max(0.5, (p.box[2] - p.box[0]) / 10.8)}%;height:${Math.max(0.5, (p.box[3] - p.box[1]) / 13.5)}%"><span>${i + 1}</span></div>`).join("")}
         </div></div>
-        <p class="muted" style="text-align:center">실제 휴대폰 폭(360pt) 크기로 보여 줍니다</p>
+        <p class="muted" style="text-align:center">실제 휴대폰 폭(360pt) 크기 · ←/→ 키나 밀어서 넘기기</p>
+        ${metricsHtml(cur)}
       </div>
       <div class="edform">
         ${probs.length ? `<div class="error"><b>고칠 곳 ${probs.length}개</b><ol>${probs.map((p) => `<li>${esc(p.label)}</li>`).join("")}</ol>
@@ -253,6 +258,29 @@ function renderEditor(c) {
       </div>
     </div></div></div>`;
 }
+
+function metricsHtml(cur) {
+  const m = cur?.metrics;
+  if (!m) return `<p class="muted">글자 수치는 이 카드를 한 번 다시 배치하면 표시됩니다.</p>`;
+  const px = (v, min) => (v == null ? "-" : `<span class="${v >= min ? "" : "bad"}">${v}px</span>`);
+  return `<table class="metrics">
+    <tr><th>글자 크기(휴대폰)</th><td>제목 ${px(m.phone_px.title, 18)} · 핵심 ${px(m.phone_px.line, 12)} · 본문 ${px(m.phone_px.body, 12)}</td></tr>
+    <tr><th>줄바꿈</th><td>제목 ${m.lines.title}줄 · 핵심 ${m.lines.line}줄 · 본문 ${m.lines.body}줄</td></tr>
+    <tr><th>여백</th><td>좌우 ${m.margin_pt}pt · 그림 ${m.picture_pct}%</td></tr>
+    <tr><th>명암(최저 대비)</th><td><span class="${m.min_contrast == null || m.min_contrast >= 4.5 ? "" : "bad"}">${m.min_contrast ?? "-"} : 1</span> (기준 4.5:1)</td></tr></table>`;
+}
+
+function moveEditor(step) {
+  const i = state.cards.findIndex((c) => c.id === editing) + step;
+  if (i >= 0 && i < state.cards.length) { editing = state.cards[i].id; render(); }
+}
+
+document.addEventListener("keydown", (e) => {
+  if (!editing || ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) return;
+  if (e.key === "ArrowLeft") moveEditor(-1);
+  if (e.key === "ArrowRight") moveEditor(1);
+  if (e.key === "Escape") { editing = null; render(); }
+});
 
 async function loadExports() {
   const el = document.getElementById("dl");
@@ -319,6 +347,14 @@ function bind() {
   }));
   document.querySelectorAll(".editCard").forEach((el) => (el.onclick = () => { editing = el.dataset.id; render(); }));
   on("closeEd", () => { editing = null; render(); });
+  on("edPrev", () => moveEditor(-1));
+  on("edNext", () => moveEditor(1));
+  const scr = document.getElementById("phoneScreen");
+  if (scr) {  // 휴대폰처럼 밀어서 넘기기
+    let x0 = null;
+    scr.ontouchstart = (e) => { x0 = e.touches[0].clientX; };
+    scr.ontouchend = (e) => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) moveEditor(dx < 0 ? 1 : -1); x0 = null; };
+  }
   on("edApply", async (e) => {
     e.target.disabled = true;
     const v = (id) => document.getElementById(id).value;

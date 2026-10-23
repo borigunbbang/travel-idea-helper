@@ -207,6 +207,7 @@ def render(card, bg_path, out_path, index, total, searched_at, image_kind, layou
     d = ImageDraw.Draw(canvas)
 
     problems = []
+    contrasts = []
 
     def draw_lines(lines, font, x, y, step, color, over, max_lines, label):
         shown = lines[:max_lines]
@@ -215,6 +216,7 @@ def render(card, bg_path, out_path, index, total, searched_at, image_kind, layou
                 ln = ln.rstrip() + "…"
             box = (x, y, x + font.getlength(ln), y + step)
             c = _worst_contrast(canvas, box, color)
+            contrasts.append(c)
             if c < 4.5:
                 problems.append({"kind": "contrast", "label": f"{label} {i+1}번째 줄이 배경과 겹쳐 잘 안 보임(대비 {c:.1f}:1)", "box": [int(v) for v in box]})
             d.text((x, y), ln, font=font, fill=color)
@@ -267,4 +269,10 @@ def render(card, bg_path, out_path, index, total, searched_at, image_kind, layou
         "contrast": {"ok": not lows, "detail": "모든 줄 대비 4.5:1 이상" if not lows else " / ".join(p["label"] for p in lows)},
         "phone": {"ok": tsize * phone >= MIN_PHONE_PX["title"] and small * phone >= MIN_PHONE_PX["body"],
                   "detail": f"휴대폰 폭 {PHONE_WIDTH}pt 환산 제목 {tsize * phone:.0f}px·핵심/본문 {small * phone:.0f}px"},
-    }, problems, lay
+    }, problems, lay, {
+        "phone_px": {"title": round(tsize * phone), "line": round(lsize * phone), "body": round(bsize * phone) if blines else None},
+        "lines": {"title": len(tlines), "line": len(llines), "body": len(blines)},
+        "margin_pt": round(MARGIN * phone),
+        "min_contrast": round(min(contrasts), 1) if contrasts else None,
+        "picture_pct": round(shown * 100),
+    }

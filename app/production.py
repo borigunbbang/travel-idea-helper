@@ -101,7 +101,7 @@ def _make_card(pid, card, regenerate, cancel, backends):
         lay = dict(card.get("layout") or {})
         if d.get("card_bg"):
             lay["bg"] = d["card_bg"]
-        checks, problems, layout = render(card, bg, png, card["index"], len(d["cards"]), d["research"]["searched_at"],
+        checks, problems, layout, metrics = render(card, bg, png, card["index"], len(d["cards"]), d["research"]["searched_at"],
                                           meta["kind"], lay)
         checks["sources"] = source_check(card, known_urls(d))
     except ImageError as e:
@@ -117,7 +117,7 @@ def _make_card(pid, card, regenerate, cancel, backends):
     version = {"v": v, "title": card["title"], "line": card["line"], "body": card.get("body", ""),
                "sources": card["sources"], "image_role": card.get("image_role", ""), "image_plan": card["image_plan"], "bg": str(Path(bg).resolve().relative_to(root)),
                "png": str(png.resolve().relative_to(root)), "image": meta, "checks": checks,
-               "problems": problems, "layout": layout,
+               "problems": problems, "layout": layout, "metrics": metrics,
                "created": datetime.now().isoformat(timespec="seconds")}
 
     def f(doc):
