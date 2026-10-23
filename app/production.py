@@ -96,8 +96,8 @@ def _make_card(pid, card, regenerate, cancel, backends):
         _set_card(pid, card["id"], status="failed", error={"kind": "image_failed", "message": f"렌더링 실패: {e}"})
         return False
     root = store.project_dir(pid).resolve()
-    version = {"v": v, "title": card["title"], "line": card["line"], "sources": card["sources"],
-               "image_plan": card["image_plan"], "bg": str(Path(bg).resolve().relative_to(root)),
+    version = {"v": v, "title": card["title"], "line": card["line"], "body": card.get("body", ""),
+               "sources": card["sources"], "image_role": card.get("image_role", ""), "image_plan": card["image_plan"], "bg": str(Path(bg).resolve().relative_to(root)),
                "png": str(png.resolve().relative_to(root)), "image": meta, "checks": checks,
                "created": datetime.now().isoformat(timespec="seconds")}
 

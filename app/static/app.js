@@ -187,6 +187,13 @@ function renderCards() {
     else if (c.status === "running") h += `<p><span class="spinner"></span>그림 생성 중…</p>`;
     else if (c.status === "pending") h += `<p class="muted">대기 중</p>`;
     if (c.status === "failed") h += `<div class="error"><b>${esc((ERR[c.error?.kind] || ["실패"])[0])}</b> — ${esc(c.error?.message)}<br><button class="secondary retryCard" data-id="${c.id}" ${state.active_run ? "disabled" : ""}>이 카드 재시도</button></div>`;
+    const t = cur || c;  // 완성된 카드는 그 버전의 글, 아직이면 기획 글
+    h += `<details class="cardtext"${cur ? "" : " open"}><summary>${esc(t.title)}</summary><dl class="sbd">
+      <dt>역할</dt><dd>${esc(c.role)}</dd>
+      <dt>핵심 문장</dt><dd>${esc(t.line)}</dd>
+      <dt>본문</dt><dd>${esc(t.body ?? c.body ?? "-")}</dd>
+      <dt>그림 계획</dt><dd>${esc(t.image_role ?? c.image_role ?? "")}${(t.image_role ?? c.image_role) ? "<br>" : ""}<span class="muted">${esc(t.image_plan)}</span></dd>
+      <dt>출처</dt><dd>${t.sources.length ? t.sources.map((u) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("<br>") : "없음"}</dd></dl></details>`;
     if (cur) {
       h += `<ul class="checks">${Object.entries(cur.checks).map(([k, v]) => `<li class="${v.ok ? "ok" : "bad"}">${v.ok ? "✓" : "✗"} ${CHECK[k] || k}: ${esc(v.detail)}</li>`).join("")}</ul>`;
       h += `<p class="muted">이미지: ${esc(cur.image.tool)} · ${esc(cur.image.note || "")}</p>`;

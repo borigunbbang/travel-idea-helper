@@ -46,3 +46,6 @@ ol.sb li { margin-bottom:10px; }
 .checks .ok { color:#067647; } .checks .bad { color:var(--err); font-weight:600; }
 .sbd { display:grid; grid-template-columns:5.5em 1fr; gap:2px 10px; margin:6px 0 0; font-size:.92rem; }
 .sbd dt { color:var(--muted); } .sbd dd { margin:0; }
+.cardtext { margin:6px 0; font-size:.85rem; }
+.cardtext summary { cursor:pointer; font-weight:600; }
+.cardtext .sbd { grid-template-columns:4.8em 1fr; font-size:.82rem; }
