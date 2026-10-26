@@ -17,6 +17,8 @@
 | 검증 기록 | `run-normal/export/check_report.md`, [../README.md](../README.md) '확인 결과' 표들 |
 | 카드뉴스 실습 완료 범위 | `cardnews-done/` (아래 4) |
 
+화면 캡처(`screens/a2`, `a3`, `b1`, `b2`) 속 여행지 사진은 위키미디어 공용의 자유 이용 라이선스 사진(CC BY-SA 등)이다. 사진마다 작가·라이선스·원본 주소는 `run-normal/photos.json`, `run-poor/photos.json`에 있고, 앱의 '자세히 보기'에도 표시된다.
+
 `data/`는 git에서 빠지는 폴더라, 제출에 필요한 화면·산출물·엔진 기록은 이 `submission/` 폴더로 복사했다. 화면은 `shoot.sh`(크롬 헤드리스)로 실제 앱을 찍었다.
 
 ## 1. 실행 증거 — 정상 입력 (실제 엔진: Claude CLI sonnet, 2026-10-23 조사, 10-26 최종 승인)
