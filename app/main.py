@@ -1,4 +1,3 @@
-import os
 import socket
 from contextlib import asynccontextmanager
 import sys
@@ -9,10 +8,10 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import production, store, worker
+from . import cards, guide, photos, store, worker
 
 STATIC = Path(__file__).resolve().parent / "static"
-app = FastAPI(title="카드뉴스 에이전트")
+app = FastAPI(title="여행 구상 도우미")
 
 
 def err(status, code, message):
@@ -50,14 +49,13 @@ app.router.lifespan_context = lifespan
 
 class NewProject(BaseModel):
     topic: str
-    period_days: int = 7
 
 
 @app.post("/api/projects")
 def create_project(body: NewProject):
     if not body.topic.strip():
-        err(400, "empty_topic", "주제를 입력하세요.")
-    return {"projectId": store.create_project(body.topic.strip(), body.period_days)["id"]}
+        err(400, "empty_topic", "여행 구상을 입력하세요.")
+    return {"projectId": store.create_project(body.topic.strip())["id"]}
 
 
 @app.get("/api/projects")
@@ -68,17 +66,21 @@ def list_projects():
 @app.get("/api/projects/{pid}")
 def get_project(pid: str):
     d = load(pid)
+    stale = d.get("deck") is None or (d["deck"] and d.get("deck_version") != cards.RENDER_VERSION)
+    if d.get("guide") and stale and d["stage"] != "approved" and not store.active_run(pid):
+        worker.build_cards(pid)  # 카드 기능 전에 만든 해설이나 그리는 방식이 바뀐 카드도 새로 그려 보이게(승인본은 그대로)
+        d = load(pid)
+    if d["concepts"]:
+        photos.ensure(pid, d["concepts"])  # 후보 장소 사진을 아직 안 찾았으면 백그라운드에서 찾는다
+    d["photos"] = photos.view(pid, d["concepts"])
     d["runs"] = store.project_runs(pid)
     d["active_run"] = store.active_run(pid)
-    # 화면 표시용: 이 서버가 쓰는 조사·원고 엔진과 이미지 작업자
-    d["workers"] = {"text": d["engine"] or worker.ENGINE_NAME,
-                    "image": os.environ.get("CARDNEWS_IMAGE", "agy")}
+    d["workers"] = {"text": d["engine"] or worker.ENGINE_NAME}  # 화면 표시용: 이 서버가 쓰는 조사·해설 엔진
     return d
 
 
 class Research(BaseModel):
     requestId: str
-    period_days: int | None = None
 
 
 @app.post("/api/projects/{pid}/research")
@@ -89,19 +91,14 @@ def research(pid: str, body: Research):
         if store.active_run(pid):
             err(409, "already_running", "이미 진행 중인 작업이 있습니다.")
         if store.get_project(pid)["stage"] not in ("created", "researching", "selecting"):
-            err(409, "wrong_stage", "후보를 고른 뒤에는 처음 조사를 다시 하지 않습니다. 새 프로젝트를 만드세요.")
-
-        def f(d):
-            if body.period_days:
-                d["period_days"] = body.period_days
-            d.update(stage="researching", error=None, candidates=[], selection=[])
-        store.update_project(pid, f)
+            err(409, "wrong_stage", "개념을 고른 뒤에는 처음 조사를 다시 하지 않습니다. 새 프로젝트를 만드세요.")
+        store.update_project(pid, lambda d: d.update(stage="researching", error=None, concepts=[], selection=[]))
         return {"runId": worker.research(pid), "status": "running"}
     return idempotent(pid, body.requestId, body.model_dump(), go)
 
 
 class Selection(BaseModel):
-    candidateIds: list[str] = Field(min_length=1, max_length=3)
+    conceptIds: list[str] = Field(min_length=1, max_length=3)
     version: int
 
 
@@ -109,14 +106,16 @@ class Selection(BaseModel):
 def selection(pid: str, body: Selection):
     d = load(pid)
     check_version(d, body.version)
-    retry_deep = d["stage"] == "deep_research" and d["error"] and not store.active_run(pid)
-    if d["stage"] != "selecting" and not retry_deep:
-        err(409, "wrong_stage", "지금은 후보를 선택하는 단계가 아닙니다.")
-    valid = {c["id"] for c in d["candidates"]}
-    if not set(body.candidateIds) <= valid:
-        err(400, "bad_candidate", "없는 후보가 포함되어 있습니다.")
-    store.update_project(pid, lambda x: x.update(selection=body.candidateIds, stage="deep_research", error=None))
-    return {"selection": body.candidateIds, "runId": worker.deep_research(pid)}
+    if store.active_run(pid):
+        err(409, "already_running", "이미 진행 중인 작업이 있습니다.")
+    retry = d["stage"] == "explaining" and d["error"]
+    if d["stage"] != "selecting" and not retry:
+        err(409, "wrong_stage", "지금은 개념을 고르는 단계가 아닙니다.")
+    valid = {c["id"] for c in d["concepts"]}
+    if not set(body.conceptIds) <= valid:
+        err(400, "bad_concept", "없는 개념이 포함되어 있습니다.")
+    store.update_project(pid, lambda x: x.update(selection=body.conceptIds, stage="explaining", error=None))
+    return {"selection": body.conceptIds, "runId": worker.explain(pid)}
 
 
 class Answer(BaseModel):
@@ -140,10 +139,10 @@ def answers(pid: str, body: Answer):
 
         def f(x):
             x["answers"].append({"questionId": q["id"], "question": q["question"], "answer": body.answer})
-            x.update(question=None, stage="deep_research", error=None)
+            x.update(question=None, stage="explaining", error=None)
         store.update_project(pid, f)
         worker.continue_with_answer(pid, q, body.answer)
-        return {"accepted": True, "stage": "deep_research"}
+        return {"accepted": True, "stage": "explaining"}
     return idempotent(pid, body.requestId, body.model_dump(), go)
 
 
@@ -158,46 +157,9 @@ def cancel(rid: str):
     return {"status": "cancelling"}
 
 
-class Approve(BaseModel):
-    stage: str
-    version: int
-    requestId: str
-
-
-@app.post("/api/projects/{pid}/approve")
-def approve(pid: str, body: Approve):
-    load(pid)
-
-    def go():
-        d = store.get_project(pid)
-        check_version(d, body.version)
-        if store.active_run(pid):
-            err(409, "already_running", "이미 진행 중인 작업이 있습니다.")
-        if body.stage == "storyboard":
-            if d["stage"] != "storyboard_review":
-                err(409, "wrong_stage", "스토리보드를 승인할 단계가 아닙니다.")
-            cards = production.cards_from_storyboard(d["storyboard"])
-            bg = d.get("card_bg") or production.pick_card_bg(d.get("visual_style"))
-            store.update_project(pid, lambda x: x.update(cards=cards, stage="producing", error=None, approved=None, card_bg=bg))
-            return {"runId": worker.produce(pid, {c["id"]: True for c in cards})}
-        if body.stage == "final":
-            if d["stage"] != "final_review":
-                err(409, "wrong_stage", "최종 승인할 단계가 아닙니다.")
-            issues = production.blocking_issues(d)
-            if issues:
-                err(409, "checks_failed", "점검을 통과하지 못한 카드가 있습니다: " + " / ".join(issues))
-            store.update_project(pid, lambda x: x.update(stage="approved", export_check=None, approved={
-                "version": x["version"] + 1, "cards": {c["id"]: c["current"] for c in x["cards"]}}))
-            files = production.export(pid)
-            return {"approved": True, "files": files, "checkRunId": worker.verify_export(pid)}
-        err(400, "bad_stage", "stage는 storyboard 또는 final 입니다.")
-    return idempotent(pid, body.requestId, body.model_dump(), go)
-
-
 class Revision(BaseModel):
-    cardIds: list[str] = Field(min_length=1)
-    instruction: str = ""
-    mode: str = ""  # text: 글자만(그림 그대로) / image: 그림만 다시. 비우면 요청이 있을 때 text, 없을 때 image
+    issueIds: list[str] = Field(min_length=1)
+    instruction: str
     version: int
     requestId: str
 
@@ -211,39 +173,26 @@ def revisions(pid: str, body: Revision):
         check_version(d, body.version)
         if store.active_run(pid):
             err(409, "already_running", "이미 진행 중인 작업이 있습니다.")
-        if d["stage"] not in ("producing", "final_review", "approved"):
-            err(409, "wrong_stage", "카드를 수정할 단계가 아닙니다.")
-        ids = {c["id"] for c in d["cards"]}
-        if not set(body.cardIds) <= ids:
-            err(400, "bad_card", "없는 카드가 포함되어 있습니다.")
-        mode = body.mode or ("text" if body.instruction.strip() else "image")
-        if mode not in ("text", "image"):
-            err(400, "bad_mode", "mode는 text 또는 image 입니다.")
-        if mode == "text" and not body.instruction.strip():
-            err(400, "empty_instruction", "글자를 어떻게 고칠지 적어 주세요.")
-
-        def f(x):
-            x.update(stage="producing", approved=None, error=None, notice=None, export_check=None)  # 수정하면 최종 승인 해제
-            for c in x["cards"]:
-                if c["id"] in body.cardIds:
-                    c.update(status="pending", error=None)
-        store.update_project(pid, f)
-        return {"runId": worker.revise(pid, body.cardIds, body.instruction, mode), "mode": mode}
+        if d["stage"] not in ("review", "approved"):
+            err(409, "wrong_stage", "해설을 고칠 단계가 아닙니다.")
+        if not set(body.issueIds) <= {i["id"] for i in d["issues"]}:
+            err(400, "bad_issue", "없는 쟁점이 포함되어 있습니다.")
+        if not body.instruction.strip():
+            err(400, "empty_instruction", "어떻게 고칠지 적어 주세요.")
+        # 고치면 최종 승인 해제
+        store.update_project(pid, lambda x: x.update(stage="review", approved=None, export_check=None, error=None,
+                                                     notice=None, revising=body.issueIds))
+        return {"runId": worker.revise(pid, body.issueIds, body.instruction.strip())}
     return idempotent(pid, body.requestId, body.model_dump(), go)
 
 
-class CardEdit(BaseModel):
-    title: str
-    line: str
-    body: str = ""
-    layout: dict = {}
+class Approve(BaseModel):
     version: int
     requestId: str
 
 
-@app.post("/api/projects/{pid}/cards/{cid}/edit")
-def edit_card(pid: str, cid: str, body: CardEdit):
-    """AI를 부르지 않고 글자와 배치만 바꿔 다시 그린다. 그림은 그대로 쓴다."""
+@app.post("/api/projects/{pid}/approve")
+def approve(pid: str, body: Approve):
     load(pid)
 
     def go():
@@ -251,28 +200,22 @@ def edit_card(pid: str, cid: str, body: CardEdit):
         check_version(d, body.version)
         if store.active_run(pid):
             err(409, "already_running", "이미 진행 중인 작업이 있습니다.")
-        if d["stage"] not in ("producing", "final_review", "approved"):
-            err(409, "wrong_stage", "카드를 고칠 단계가 아닙니다.")
-        if not body.title.strip() or not body.line.strip():
-            err(400, "empty_text", "제목과 핵심 문장은 비울 수 없습니다.")
-        bad = {k: v for k, v in body.layout.items()
-               if (k, v) not in {("position", "split"), ("position", "top"), ("position", "bottom"), ("size", "small"), ("size", "normal"),
-                                 ("size", "large"), ("shade", "light"), ("shade", "normal"), ("shade", "strong"),
-                                 ("position", "picture_top"), ("palette", "match"), ("palette", "dark")}}
-        if bad:
-            err(400, "bad_layout", f"알 수 없는 배치 값: {bad}")
-        if cid not in {c["id"] for c in d["cards"]}:
-            err(404, "not_found", "카드가 없습니다.")
-
-        def f(x):
-            x.update(stage="producing", approved=None, error=None, notice=None, export_check=None)  # 고치면 최종 승인 해제
-            for c in x["cards"]:
-                if c["id"] == cid:
-                    c.update(title=body.title.strip(), line=body.line.strip(), body=body.body.strip(),
-                             layout={**c.get("layout", {}), **body.layout}, status="pending", error=None)
-        store.update_project(pid, f)
-        return {"runId": worker.produce(pid, {cid: False})}
+        if d["stage"] != "review":
+            err(409, "wrong_stage", "최종 승인할 단계가 아닙니다.")
+        store.update_project(pid, lambda x: x.update(stage="approved", export_check=None, approved={
+            "version": x["version"] + 1, "issues": {i["id"]: i["v"] for i in x["issues"]}}))
+        cards.build(pid)  # 승인하는 내용 그대로 카드를 맞춰 둔다(바뀌지 않은 카드는 다시 그리지 않음)
+        files = guide.export(pid)
+        return {"approved": True, "files": files, "checkRunId": worker.verify_export(pid)}
     return idempotent(pid, body.requestId, body.model_dump(), go)
+
+
+@app.post("/api/projects/{pid}/photos/retry")
+def photos_retry(pid: str):
+    """받지 못한 후보 사진을 다시 찾는다."""
+    d = load(pid)
+    photos.ensure(pid, d["concepts"], retry_failed=True)
+    return {"state": "loading"}
 
 
 @app.get("/api/projects/{pid}/exports")
@@ -295,6 +238,7 @@ def recheck(pid: str):
         err(409, "not_approved", "최종 승인 후 점검할 수 있습니다.")
     if store.active_run(pid):
         err(409, "already_running", "이미 진행 중인 작업이 있습니다.")
+    store.update_project(pid, lambda x: x.update(error=None))
     return {"runId": worker.verify_export(pid)}
 
 

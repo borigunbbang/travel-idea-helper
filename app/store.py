@@ -8,14 +8,15 @@ import time
 import uuid
 from pathlib import Path
 
-# 시험할 때는 CARDNEWS_DATA로 별도 폴더를 써서 실제 프로젝트를 건드리지 않는다
-DATA_DIR = Path(os.environ.get("CARDNEWS_DATA") or Path(__file__).resolve().parent.parent / "data").resolve()
+# 시험할 때는 TRAVEL_DATA로 별도 폴더를 써서 실제 프로젝트를 건드리지 않는다.
+# 기본은 data/travel. 예전 카드뉴스 기록(data/app.db)은 건드리지 않고 그대로 둔다.
+DATA_DIR = Path(os.environ.get("TRAVEL_DATA") or Path(__file__).resolve().parent.parent / "data" / "travel").resolve()
 DB_PATH = DATA_DIR / "app.db"
 _lock = threading.RLock()
 
 
 def _conn():
-    DATA_DIR.mkdir(exist_ok=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
     c = sqlite3.connect(DB_PATH, check_same_thread=False)
     c.row_factory = sqlite3.Row
     return c
@@ -42,14 +43,14 @@ def project_dir(pid):
     return d
 
 
-def create_project(topic, period_days):
+def create_project(topic):
     pid = new_id("p")
     doc = {
-        "id": pid, "topic": topic, "period_days": period_days, "stage": "created",
+        "id": pid, "topic": topic, "stage": "created",
         "version": 1, "engine": None, "session_id": None, "research": None,
-        "candidates": [], "selection": [], "question": None, "answers": [],
-        "editorial": None, "storyboard": None, "cards": [], "approved_version": None,
-        "error": None, "created": time.time(),
+        "concepts": [], "selection": [], "question": None, "answers": [],
+        "guide": None, "issues": [], "revising": [], "approved": None, "export_check": None,
+        "error": None, "notice": None, "created": time.time(),
     }
     with _lock, _conn() as c:
         c.execute("INSERT INTO projects VALUES (?, ?)", (pid, json.dumps(doc, ensure_ascii=False)))
@@ -112,9 +113,7 @@ def mark_interrupted():
         set_run(r["id"], "interrupted", "서버 재시작으로 중단됨")
         def f(d):
             d["error"] = {"kind": "interrupted", "message": "서버가 재시작되어 작업이 중단되었습니다.", "action": "재시도"}
-            for c in d.get("cards", []):  # 만들던 카드만 중단 표시, 완성된 카드는 그대로
-                if c["status"] in ("running", "pending"):
-                    c.update(status="failed", error={"kind": "interrupted", "message": "서버 재시작으로 중단됨"})
+            d["revising"] = []  # 고치던 쟁점은 이전 버전 그대로 남는다
         update_project(r["project_id"], f)
 
 

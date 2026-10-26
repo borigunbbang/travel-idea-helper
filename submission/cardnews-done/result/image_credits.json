@@ -1,0 +1,72 @@
+[
+ {
+  "card": "card_01.png",
+  "kind": "generated",
+  "tool": "Claude CLI(도형 설계) + Pillow(그리기)",
+  "created": "2026-10-23T14:49:18",
+  "prompt": "카드뉴스용 설명 일러스트를 도형으로 설계해 JSON으로만 답해. 캔버스는 가로 1080, 세로 1350 픽셀, 원점은 왼쪽 위.\n이 그림의 역할: 두 소식이 있다는 구성을 한눈에 보여 줌\n그릴 내용: 아래 65%에 크림 바탕 위로 금색 원형 도형(왼쪽)과 청록색 상자 도형(오른쪽)이 나란히 놓인 구도. 두 도형 사이에 얇은 선이 이어진다. 위쪽 35%는 비워 둔다.\n카드 메시지(참고용, 글자로 쓰지 말 것): 10월 18~20일, AI 업계에서 두 가지 소식이 나왔다.\n공통 그림체: 색감: 주조색 짙은 남색(#1F2A44), 보조색 크림(#F5EFE0), 강조색 따뜻한 금색(#E8A93B)과 청록(#2A9D8F) / 그림체: 플랫 벡터 일러스트. 단순한 선과 면, 그림자 없음, 둥근 모서리 도형과 얇은 외곽선. 그림 안에 글자·숫자·로고는 넣지 않는다. / 분위기: 차분하고 신뢰감 있는 뉴스 톤. 위쪽 35%는 제목을 올릴 빈 공간으로 두고, 그림은 아래 65%에 배치한다.. 색은 이 팔레트 안에서 #RRGGBB로 고른다.\n규칙: 글자·숫자 모양을 만들지 않는다. y < 470(위쪽 35%)에는 도형을 두지 않고 배경만 둔다. rect·ellipse·polygon·line을 30~120개 써서 무엇을 그렸는지 알아볼 수 있게 단순한 플랫 일러스트로 만든다.",
+  "conversation_id": null,
+  "fallback_reason": "agy 실패(quota_exceeded): agy 이미지 사용량(쿼터)이 초과되었습니다. agy 응답: 이미지 생성 모델의 할당량 소진 오류(429 RESOURCE_EXHAUSTED)로 인해 이미지 생성이 실패했습니다.\n\n**실패 이유:**\n`429 RESOURCE_EXHAUSTED: \"You have exhausted your capacity on this model. Your quota will reset after 165h31m46s.\"`",
+  "note": "AI가 설계한 도형으로 그린 일러스트. 실제 제품 화면·사건 사진이 아님."
+ },
+ {
+  "card": "card_02.png",
+  "kind": "generated",
+  "tool": "Claude CLI(도형 설계) + Pillow(그리기)",
+  "created": "2026-10-23T15:17:27",
+  "prompt": "카드뉴스용 설명 일러스트를 도형으로 설계해 JSON으로만 답해. 캔버스는 가로 1080, 세로 1350 픽셀, 원점은 왼쪽 위.\n이 그림의 역할: 전체 중 일부가 따로 떼어져 나간다는 개념을 비유로 설명\n그릴 내용: 아래 65%에 큰 금색 원에서 작은 조각 하나가 떨어져 청록색 바구니로 옮겨 가는 장면. 남색 배경에 크림색 외곽선. 위쪽 35%는 비워 둔다.\n카드 메시지(참고용, 글자로 쓰지 말 것): Anthropic은 10월 18일 지분 5%를 새 공익 펀드에 내겠다고 발표했다.\n공통 그림체: 색감: 주조색 짙은 남색(#1F2A44), 보조색 크림(#F5EFE0), 강조색 따뜻한 금색(#E8A93B)과 청록(#2A9D8F) / 그림체: 플랫 벡터 일러스트. 단순한 선과 면, 그림자 없음, 둥근 모서리 도형과 얇은 외곽선. 그림 안에 글자·숫자·로고는 넣지 않는다. / 분위기: 차분하고 신뢰감 있는 뉴스 톤. 위쪽 35%는 제목을 올릴 빈 공간으로 두고, 그림은 아래 65%에 배치한다. / 배경: 전체를 #F5EFE0 단색으로(모든 카드 같은 배경색). 색은 이 팔레트 안에서 #RRGGBB로 고른다.\n규칙: 글자·숫자 모양을 만들지 않는다. y < 470(위쪽 35%)에는 도형을 두지 않고 배경만 둔다. rect·ellipse·polygon·line을 30~120개 써서 무엇을 그렸는지 알아볼 수 있게 단순한 플랫 일러스트로 만든다.",
+  "conversation_id": null,
+  "fallback_reason": "agy 실패(quota_exceeded): agy 이미지 사용량(쿼터)이 초과되었습니다. agy 응답: 이미지 생성에 실패했습니다. 실패 이유는 다음과 같습니다:\n\nImage generation failed due to a quota exhaustion error (HTTP 429 RESOURCE_EXHAUSTED): \"You have exhausted your capacity on this model. Your quota will reset after 165h4m23s (reset timestamp: 2026-10-30T03:19:12Z).\"",
+  "note": "AI가 설계한 도형으로 그린 일러스트. 실제 제품 화면·사건 사진이 아님."
+ },
+ {
+  "card": "card_03.png",
+  "kind": "generated",
+  "tool": "Claude CLI(도형 설계) + Pillow(그리기)",
+  "created": "2026-10-23T14:51:50",
+  "prompt": "카드뉴스용 설명 일러스트를 도형으로 설계해 JSON으로만 답해. 캔버스는 가로 1080, 세로 1350 픽셀, 원점은 왼쪽 위.\n이 그림의 역할: 단계가 올라갈 때마다 조각이 추가되는 과정을 도식으로 보여 줌\n그릴 내용: 아래 65%에 왼쪽에서 오른쪽으로 높아지는 계단 세 칸. 각 계단 위에 작은 금색 조각이 하나씩 쌓인다. 마지막 계단 앞은 점선으로 흐리게 처리. 위쪽 35%는 비워 둔다.\n카드 메시지(참고용, 글자로 쓰지 말 것): 기업가치가 50% 오를 때마다 이사회 재량으로 2%를 더 낼 수 있다.\n공통 그림체: 색감: 주조색 짙은 남색(#1F2A44), 보조색 크림(#F5EFE0), 강조색 따뜻한 금색(#E8A93B)과 청록(#2A9D8F) / 그림체: 플랫 벡터 일러스트. 단순한 선과 면, 그림자 없음, 둥근 모서리 도형과 얇은 외곽선. 그림 안에 글자·숫자·로고는 넣지 않는다. / 분위기: 차분하고 신뢰감 있는 뉴스 톤. 위쪽 35%는 제목을 올릴 빈 공간으로 두고, 그림은 아래 65%에 배치한다.. 색은 이 팔레트 안에서 #RRGGBB로 고른다.\n규칙: 글자·숫자 모양을 만들지 않는다. y < 470(위쪽 35%)에는 도형을 두지 않고 배경만 둔다. rect·ellipse·polygon·line을 30~120개 써서 무엇을 그렸는지 알아볼 수 있게 단순한 플랫 일러스트로 만든다.",
+  "conversation_id": null,
+  "fallback_reason": "agy 실패(quota_exceeded): agy 이미지 사용량(쿼터)이 초과되었습니다. agy 응답: 이미지 생성 하위 작업이 실패하였습니다. 실패 이유는 다음과 같습니다:\n\n**실패 이유**:\nHTTP 429 RESOURCE_EXHAUSTED (`You have exhausted your capacity on this model. Your quota will reset after 165h31m38s.`)",
+  "note": "AI가 설계한 도형으로 그린 일러스트. 실제 제품 화면·사건 사진이 아님."
+ },
+ {
+  "card": "card_04.png",
+  "kind": "generated",
+  "tool": "Claude CLI(도형 설계) + Pillow(그리기)",
+  "created": "2026-10-23T14:49:43",
+  "prompt": "카드뉴스용 설명 일러스트를 도형으로 설계해 JSON으로만 답해. 캔버스는 가로 1080, 세로 1350 픽셀, 원점은 왼쪽 위.\n이 그림의 역할: 한 곳에서 여러 갈래로 지원이 나가는 흐름을 설명\n그릴 내용: 아래 65%에 중앙의 청록색 그릇에서 금색 선이 세 갈래로 퍼져 작은 사람 모양과 건물 모양 도형으로 이어지는 구도. 위쪽 35%는 비워 둔다.\n카드 메시지(참고용, 글자로 쓰지 말 것): 전통적 비영리단체 기부나 특정 집단 직접 지급에 쓸 수 있다고 한다.\n공통 그림체: 색감: 주조색 짙은 남색(#1F2A44), 보조색 크림(#F5EFE0), 강조색 따뜻한 금색(#E8A93B)과 청록(#2A9D8F) / 그림체: 플랫 벡터 일러스트. 단순한 선과 면, 그림자 없음, 둥근 모서리 도형과 얇은 외곽선. 그림 안에 글자·숫자·로고는 넣지 않는다. / 분위기: 차분하고 신뢰감 있는 뉴스 톤. 위쪽 35%는 제목을 올릴 빈 공간으로 두고, 그림은 아래 65%에 배치한다.. 색은 이 팔레트 안에서 #RRGGBB로 고른다.\n규칙: 글자·숫자 모양을 만들지 않는다. y < 470(위쪽 35%)에는 도형을 두지 않고 배경만 둔다. rect·ellipse·polygon·line을 30~120개 써서 무엇을 그렸는지 알아볼 수 있게 단순한 플랫 일러스트로 만든다.",
+  "conversation_id": null,
+  "fallback_reason": "agy 실패(quota_exceeded): agy 이미지 사용량(쿼터)이 초과되었습니다. agy 응답: 이미지 생성 모델의 할당량 소진 오류(429 RESOURCE_EXHAUSTED)로 인해 이미지 생성이 실패했습니다.\n\n**실패 이유:**\n`429 RESOURCE_EXHAUSTED: \"You have exhausted your capacity on this model. Your quota will reset after 165h31m46s.\"`",
+  "note": "AI가 설계한 도형으로 그린 일러스트. 실제 제품 화면·사건 사진이 아님."
+ },
+ {
+  "card": "card_05.png",
+  "kind": "generated",
+  "tool": "Claude CLI(도형 설계) + Pillow(그리기)",
+  "created": "2026-10-23T14:50:21",
+  "prompt": "카드뉴스용 설명 일러스트를 도형으로 설계해 JSON으로만 답해. 캔버스는 가로 1080, 세로 1350 픽셀, 원점은 왼쪽 위.\n이 그림의 역할: 확정과 미확정의 구분을 시각적으로 설명\n그릴 내용: 아래 65%에 실선으로 그려진 문 하나와 점선으로 흐리게 그려진 문 두 개가 이어진 복도. 남색과 크림 톤, 점선 부분은 연한 금색. 위쪽 35%는 비워 둔다.\n카드 메시지(참고용, 글자로 쓰지 말 것): 주주 승인과 구체적인 운영 방식이 아직 남아 있다.\n공통 그림체: 색감: 주조색 짙은 남색(#1F2A44), 보조색 크림(#F5EFE0), 강조색 따뜻한 금색(#E8A93B)과 청록(#2A9D8F) / 그림체: 플랫 벡터 일러스트. 단순한 선과 면, 그림자 없음, 둥근 모서리 도형과 얇은 외곽선. 그림 안에 글자·숫자·로고는 넣지 않는다. / 분위기: 차분하고 신뢰감 있는 뉴스 톤. 위쪽 35%는 제목을 올릴 빈 공간으로 두고, 그림은 아래 65%에 배치한다.. 색은 이 팔레트 안에서 #RRGGBB로 고른다.\n규칙: 글자·숫자 모양을 만들지 않는다. y < 470(위쪽 35%)에는 도형을 두지 않고 배경만 둔다. rect·ellipse·polygon·line을 30~120개 써서 무엇을 그렸는지 알아볼 수 있게 단순한 플랫 일러스트로 만든다.",
+  "conversation_id": null,
+  "fallback_reason": "agy 실패(quota_exceeded): agy 이미지 사용량(쿼터)이 초과되었습니다. agy 응답: 실패 이유:\n\n```text\nImage generation could not be completed due to a model quota/capacity error:\n- Error: 429 RESOURCE_EXHAUSTED / QUOTA_EXHAUSTED on gemini-3.1-flash-image (\"You have exhausted your capacity on this model. Your quota will reset after 165h31m47s.\")\n- In accordance with system instruction",
+  "note": "AI가 설계한 도형으로 그린 일러스트. 실제 제품 화면·사건 사진이 아님."
+ },
+ {
+  "card": "card_06.png",
+  "kind": "generated",
+  "tool": "Claude CLI(도형 설계) + Pillow(그리기)",
+  "created": "2026-10-23T15:17:03",
+  "prompt": "카드뉴스용 설명 일러스트를 도형으로 설계해 JSON으로만 답해. 캔버스는 가로 1080, 세로 1350 픽셀, 원점은 왼쪽 위.\n이 그림의 역할: AI 모델을 돌리는 엔진 도구가 공개된다는 개념을 비유로 설명\n그릴 내용: 아래 65%에 열린 청록색 상자에서 톱니바퀴와 회로 조각이 밖으로 나오는 구도. 남색 배경에 금색 포인트. 위쪽 35%는 비워 둔다.\n카드 메시지(참고용, 글자로 쓰지 말 것): DeepSeek은 10월 20일 추론 프레임워크 DeepInfer를 GitHub에 공개했다.\n공통 그림체: 색감: 주조색 짙은 남색(#1F2A44), 보조색 크림(#F5EFE0), 강조색 따뜻한 금색(#E8A93B)과 청록(#2A9D8F) / 그림체: 플랫 벡터 일러스트. 단순한 선과 면, 그림자 없음, 둥근 모서리 도형과 얇은 외곽선. 그림 안에 글자·숫자·로고는 넣지 않는다. / 분위기: 차분하고 신뢰감 있는 뉴스 톤. 위쪽 35%는 제목을 올릴 빈 공간으로 두고, 그림은 아래 65%에 배치한다. / 배경: 전체를 #F5EFE0 단색으로(모든 카드 같은 배경색). 색은 이 팔레트 안에서 #RRGGBB로 고른다.\n규칙: 글자·숫자 모양을 만들지 않는다. y < 470(위쪽 35%)에는 도형을 두지 않고 배경만 둔다. rect·ellipse·polygon·line을 30~120개 써서 무엇을 그렸는지 알아볼 수 있게 단순한 플랫 일러스트로 만든다.",
+  "conversation_id": null,
+  "fallback_reason": "agy 실패(quota_exceeded): agy 이미지 사용량(쿼터)이 초과되었습니다. agy 응답: 이미지 생성 작업이 모델 쿼터 소진으로 인해 실패했습니다.\n\n**실패 이유:**\n- **상태:** 실패 (HTTP 429 `RESOURCE_EXHAUSTED` / `QUOTA_EXHAUSTED`)\n- **상세 내용:** 이미지 생성 모델(`gemini-3.1-flash-image`)의 사용 용량/쿼터가 모두 소진되었습니다.\n- **결과:** 이미지가 생성되거나 저장되지 못했습니다.",
+  "note": "AI가 설계한 도형으로 그린 일러스트. 실제 제품 화면·사건 사진이 아님."
+ },
+ {
+  "card": "card_07.png",
+  "kind": "generated",
+  "tool": "Claude CLI(도형 설계) + Pillow(그리기)",
+  "created": "2026-10-23T14:50:42",
+  "prompt": "카드뉴스용 설명 일러스트를 도형으로 설계해 JSON으로만 답해. 캔버스는 가로 1080, 세로 1350 픽셀, 원점은 왼쪽 위.\n이 그림의 역할: 두 소식을 마무리하며 확인할 항목이 남았음을 보여 줌\n그릴 내용: 아래 65%에 금색 원과 청록색 상자가 나란히 놓이고, 그 아래 빈 체크 칸 두 개가 있는 구도. 크림 바탕에 남색 외곽선. 위쪽 35%는 비워 둔다.\n카드 메시지(참고용, 글자로 쓰지 말 것): 두 소식 모두 발표는 됐지만 확정되지 않은 부분이 남았다.\n공통 그림체: 색감: 주조색 짙은 남색(#1F2A44), 보조색 크림(#F5EFE0), 강조색 따뜻한 금색(#E8A93B)과 청록(#2A9D8F) / 그림체: 플랫 벡터 일러스트. 단순한 선과 면, 그림자 없음, 둥근 모서리 도형과 얇은 외곽선. 그림 안에 글자·숫자·로고는 넣지 않는다. / 분위기: 차분하고 신뢰감 있는 뉴스 톤. 위쪽 35%는 제목을 올릴 빈 공간으로 두고, 그림은 아래 65%에 배치한다.. 색은 이 팔레트 안에서 #RRGGBB로 고른다.\n규칙: 글자·숫자 모양을 만들지 않는다. y < 470(위쪽 35%)에는 도형을 두지 않고 배경만 둔다. rect·ellipse·polygon·line을 30~120개 써서 무엇을 그렸는지 알아볼 수 있게 단순한 플랫 일러스트로 만든다.",
+  "conversation_id": null,
+  "fallback_reason": "agy 실패(quota_exceeded): agy 이미지 사용량(쿼터)이 초과되었습니다. agy 응답: 실패 이유:\n\n```text\nImage generation could not be completed due to a model quota/capacity error:\n- Error: 429 RESOURCE_EXHAUSTED / QUOTA_EXHAUSTED on gemini-3.1-flash-image (\"You have exhausted your capacity on this model. Your quota will reset after 165h31m47s.\")\n- In accordance with system instruction",
+  "note": "AI가 설계한 도형으로 그린 일러스트. 실제 제품 화면·사건 사진이 아님."
+ }
+]

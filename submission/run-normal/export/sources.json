@@ -1,0 +1,257 @@
+{
+ "topic": "2박 3일 혼자여행, 국내 여행, 예산 50만원 이하, 힐링",
+ "searched_at": "2026-10-23T17:32:53.882362+09:00",
+ "approved_version": 11,
+ "mock": false,
+ "issues": [
+  {
+   "n": 1,
+   "id": "i1",
+   "v": 1,
+   "question": "서울에서 대중교통만으로 묵호·평창·횡성을 2박 3일에 돌 수 있나?",
+   "level": "일부",
+   "evidence": [
+    {
+     "claim": "2026년 10월 시간표 자료에서 서울발 KTX 강릉행은 대부분 약 2시간 걸리고 기본운임은 27,600원으로 표시된다. 강릉→묵호 누리로는 약 36분에 2,600원(아사마루 시간표, 2026년 8월 기준)이라는 검색 요약이다.",
+     "url": "https://info.koreacharts.com/traintime/10007/10127/contents.html?date=2026-10-15",
+     "source_title": "info.koreacharts.com 열차 시간표",
+     "published": "2026-10-15",
+     "source_type": "여행 정보"
+    },
+    {
+     "claim": "코스는 묵호 도째비골 → 평창 도암식당 → 효석문화마을·상원사·발왕산 → 횡성 하누성 → 안동 순이다. 교통편 전체에 대한 설명은 없고 주차 정보가 여러 곳에 나온다.",
+     "url": "https://www.yeogi.com/content/tripholic-dom-ko-gangwon-pyeongchang-course",
+     "source_title": "여기어때 여행매거진: 2박 3일 가을 힐링 강원도 여행 코스",
+     "published": "2026-10-19",
+     "source_type": "여행 정보"
+    }
+   ],
+   "gaps": [
+    {
+     "what": "평창(봉평·오대산·발왕산)·횡성을 잇는 버스·기차 노선과 소요 시간",
+     "why": "이 구간이 안 이어지면 코스를 묵호 중심으로 줄여야 한다",
+     "where_to_check": "코레일(KTX 평창·진부역), 강원도 시외버스 시간표(버스타고), 각 군청 관광 안내"
+    }
+   ],
+   "auto_gaps": [
+    "공식 자료(관광청·운영 기관·교통사·정부 등)를 확인하지 못했다."
+   ]
+  },
+  {
+   "n": 2,
+   "id": "i2",
+   "v": 1,
+   "question": "지금(10월 하순) 메밀꽃과 단풍을 볼 수 있나?",
+   "level": "일부",
+   "evidence": [
+    {
+     "claim": "2026 효석문화제는 9월 4일~13일 평창군 봉평면 효석문화마을 일원에서 열렸다(검색 요약).",
+     "url": "https://news.mtn.co.kr/news-detail/2026090411182527066",
+     "source_title": "올가을엔 강원도로…메밀꽃밭 문학 산책부터 드론쇼",
+     "published": "2026-09-04",
+     "source_type": "언론"
+    },
+    {
+     "claim": "10월 15일 오대산 진고개 일대가 오색단풍으로 물들었다고 보도했고, 이번 주말 강원 지역부터 절정이라는 내용이다(검색 요약).",
+     "url": "https://khan.co.kr/article/202610170600121",
+     "source_title": "경향신문 단풍 기사",
+     "published": "2026-10-17",
+     "source_type": "언론"
+    },
+    {
+     "claim": "메밀꽃은 가을(9~11월) 볼거리로 소개되지만 구체적 개화 날짜는 없고, 단풍철 상원사 주차장이 붐빈다고 한다.",
+     "url": "https://www.yeogi.com/content/tripholic-dom-ko-gangwon-pyeongchang-course",
+     "source_title": "여기어때 여행매거진: 2박 3일 가을 힐링 강원도 여행 코스",
+     "published": "2026-10-19",
+     "source_type": "여행 정보"
+    },
+    {
+     "claim": "산림청 예측에서 설악산 단풍 절정은 10월 20일로 제시됐다.",
+     "url": "https://foxcg.com/2026-autumn-foliage-peak/",
+     "source_title": "2026 단풍 절정 시기",
+     "published": null,
+     "source_type": "개인 글"
+    }
+   ],
+   "gaps": [
+    {
+     "what": "오대산·상원사 지금의 단풍 현황과 공식 절정 예측",
+     "why": "출발 날짜에 따라 단풍이 이미 졌을 수 있다",
+     "where_to_check": "기상청 날씨누리 유명산 단풍현황, 산림청, 오대산국립공원"
+    }
+   ],
+   "auto_gaps": [
+    "공식 자료(관광청·운영 기관·교통사·정부 등)를 확인하지 못했다.",
+    "게시일을 확인 못 한 출처 1개."
+   ]
+  },
+  {
+   "n": 3,
+   "id": "i3",
+   "v": 1,
+   "question": "혼자 예산 50만원 안에 들어오나?",
+   "level": "부족",
+   "evidence": [
+    {
+     "claim": "서울발 KTX 강릉행 기본운임 27,600원, 강릉→묵호 누리로 2,600원으로 표시된다(검색 요약).",
+     "url": "https://info.koreacharts.com/traintime/10007/10127/contents.html?date=2026-10-14",
+     "source_title": "info.koreacharts.com 열차 시간표",
+     "published": "2026-10-14",
+     "source_type": "여행 정보"
+    },
+    {
+     "claim": "숙소 가격과 케이블카 요금은 언급되지 않았고 하누성은 '가격이 조금 있었다'고만 적혀 있다.",
+     "url": "https://www.yeogi.com/content/tripholic-dom-ko-gangwon-pyeongchang-course",
+     "source_title": "여기어때 여행매거진: 2박 3일 가을 힐링 강원도 여행 코스",
+     "published": "2026-10-19",
+     "source_type": "여행 정보"
+    }
+   ],
+   "gaps": [
+    {
+     "what": "묵호·평창·횡성 1인 숙박비, 발왕산 케이블카 요금, 혼자 가능한 식당의 1인 가격",
+     "why": "총액이 50만원 안인지 계산하려면 숙박 2박과 식비가 필요하다",
+     "where_to_check": "숙박 예약 사이트 날짜별 1인 조회, 발왕산 관광케이블카 공식 사이트, 각 식당 안내"
+    }
+   ],
+   "auto_gaps": [
+    "공식 자료(관광청·운영 기관·교통사·정부 등)를 확인하지 못했다."
+   ]
+  },
+  {
+   "n": 4,
+   "id": "i4",
+   "v": 1,
+   "question": "3일차 안동까지 넣어도 동선이 무리 없나?",
+   "level": "부족",
+   "evidence": [
+    {
+     "claim": "3일차는 안동 헛제사밥 까치구멍집 식사와 병산서원이다.",
+     "url": "https://www.yeogi.com/content/tripholic-dom-ko-gangwon-pyeongchang-course",
+     "source_title": "여기어때 여행매거진: 2박 3일 가을 힐링 강원도 여행 코스",
+     "published": "2026-10-19",
+     "source_type": "여행 정보"
+    },
+    {
+     "claim": "서울역→안동역 KTX-이음은 약 2시간 9분~27분대, 기본운임 29,300원으로 표시된다(검색 요약).",
+     "url": "https://info.koreacharts.com/traintime/10007/10312/contents.html?date=2026-10-14",
+     "source_title": "info.koreacharts.com 열차 시간표",
+     "published": "2026-10-14",
+     "source_type": "여행 정보"
+    }
+   ],
+   "gaps": [
+    {
+     "what": "횡성·평창에서 안동까지의 대중교통 경로와 시간",
+     "why": "3일차를 넣을지, 귀가 시간에 맞는지 정해야 한다",
+     "where_to_check": "코레일톡, 시외버스 통합예매(버스타고)"
+    }
+   ],
+   "auto_gaps": [
+    "공식 자료(관광청·운영 기관·교통사·정부 등)를 확인하지 못했다."
+   ]
+  },
+  {
+   "n": 5,
+   "id": "i5",
+   "v": 1,
+   "question": "서울에서 경주·안동까지 대중교통 이동 시간과 교통비는 얼마나 드나?",
+   "level": "일부",
+   "evidence": [
+    {
+     "claim": "서울↔경주 열차는 대체로 2시간 10분 안팎, 편도 기본운임 44,600원이고 정차역이 많으면 3시간 이상이다(검색 요약).",
+     "url": "https://info.koreacharts.com/traintime/10311/10007/contents.html",
+     "source_title": "info.koreacharts.com 열차 시간표",
+     "published": null,
+     "source_type": "여행 정보"
+    },
+    {
+     "claim": "서울역→안동역 KTX-이음 약 2시간 9분~27분대, 기본운임 29,300원이다(검색 요약).",
+     "url": "https://info.koreacharts.com/traintime/10007/10312/contents.html?date=2026-10-14",
+     "source_title": "info.koreacharts.com 열차 시간표",
+     "published": "2026-10-14",
+     "source_type": "여행 정보"
+    },
+    {
+     "claim": "안동역↔신경주역 KTX-이음은 요금 15,200원으로 표시된다(검색 요약).",
+     "url": "https://train.asamaru.net/시간표/안동역-중앙선/출발/신경주역-경부선/도착/",
+     "source_title": "아사마루 열차 시간표",
+     "published": null,
+     "source_type": "여행 정보"
+    }
+   ],
+   "gaps": [
+    {
+     "what": "경주역·신경주역 도착 후 시내 이동과 안동 시내 이동 방법",
+     "why": "역에서 관광지까지 이동 시간이 일정에 영향을 준다",
+     "where_to_check": "코레일, 경주시·안동시 관광 안내, 지도 앱"
+    }
+   ],
+   "auto_gaps": [
+    "공식 자료(관광청·운영 기관·교통사·정부 등)를 확인하지 못했다.",
+    "게시일을 확인 못 한 출처 2개."
+   ]
+  },
+  {
+   "n": 6,
+   "id": "i6",
+   "v": 1,
+   "question": "한옥 1인 숙박은 얼마나 하고 예산에 맞나?",
+   "level": "부족",
+   "evidence": [
+    {
+     "claim": "한 한옥 숙소는 2인 1실 기준 조식 포함 요금이며 추가 인원은 1인 6만원이 추가된다고 안내한다. 1인 단독 요금은 명시되지 않았다(검색 요약).",
+     "url": "https://www.yeogi.com/domestic-accommodations/89188",
+     "source_title": "여기어때 숙소 안내",
+     "published": null,
+     "source_type": "여행 정보"
+    },
+    {
+     "claim": "에어비앤비 황남동 숙소 최저 요금 1박 ₩142,210, 황오동 ₩100,067(세금·수수료 별도)로 표시되며 날짜·인원 조건이 없는 수치다(검색 요약).",
+     "url": "https://www.airbnb.co.kr/hwango-dong-gyeongju-si-south-korea/stays/family-friendly",
+     "source_title": "에어비앤비 경주 황남동",
+     "published": null,
+     "source_type": "여행 정보"
+    }
+   ],
+   "gaps": [
+    {
+     "what": "출발 날짜 기준 경주·안동 한옥 1인 1박 요금",
+     "why": "2박 숙박비가 예산의 가장 큰 변수다",
+     "where_to_check": "숙박 예약 사이트에서 날짜와 1인 조건으로 조회, 숙소 공식 사이트"
+    }
+   ],
+   "auto_gaps": [
+    "공식 자료(관광청·운영 기관·교통사·정부 등)를 확인하지 못했다.",
+    "게시일을 확인 못 한 출처 2개."
+   ]
+  },
+  {
+   "n": 7,
+   "id": "i7",
+   "v": 1,
+   "question": "이 코스가 가을에도 조용한 힐링이 되나?",
+   "level": "부족",
+   "evidence": [
+    {
+     "claim": "경주 코스는 황리단길·대릉원·월정교 야경, 불국사·석굴암·보문단지, 동궁과 월지·교촌마을이며 기사는 노동절 연휴 기준이다. 이동 수단·요금은 없고 안동은 다루지 않는다.",
+     "url": "https://www.news-wa.com/amp/travel/tour-korea/2026/04/16/20260416500008",
+     "source_title": "5월 1일 노동절 여행 어디갈까",
+     "published": "2026-04-16",
+     "source_type": "언론"
+    }
+   ],
+   "gaps": [
+    {
+     "what": "10~11월 경주 주요 명소 혼잡도와 운영 시간·휴무, 입장료",
+     "why": "힐링이 목적이라 혼잡하면 맞지 않을 수 있다",
+     "where_to_check": "경주시 문화관광 사이트, 한국관광공사 대한민국 구석구석, 불국사·대릉원 등 운영 기관 공지"
+    }
+   ],
+   "auto_gaps": [
+    "출처가 하나뿐이다. 다른 자료로 교차 확인하지 못했다.",
+    "공식 자료(관광청·운영 기관·교통사·정부 등)를 확인하지 못했다."
+   ]
+  }
+ ]
+}

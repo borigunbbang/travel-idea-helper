@@ -1,0 +1,102 @@
+[
+ {
+  "page": 1,
+  "kind": "cover",
+  "png": "cards/4137748e97238201.png",
+  "overflow": [],
+  "file": "card-01-cover.png"
+ },
+ {
+  "page": 2,
+  "kind": "overview",
+  "png": "cards/4e8e439fdcc95b35.png",
+  "overflow": [],
+  "file": "card-02-overview.png"
+ },
+ {
+  "page": 3,
+  "kind": "concept",
+  "png": "cards/6c8a84845014ead8.png",
+  "overflow": [],
+  "concept_id": "k4",
+  "file": "card-03-concept.png"
+ },
+ {
+  "page": 4,
+  "kind": "issue",
+  "png": "cards/0f172fca1f9e9ced.png",
+  "overflow": [],
+  "issue_id": "i1",
+  "level": "일부",
+  "file": "card-04-issue.png"
+ },
+ {
+  "page": 5,
+  "kind": "issue",
+  "png": "cards/4187f53ab537fd1e.png",
+  "overflow": [],
+  "issue_id": "i2",
+  "level": "일부",
+  "file": "card-05-issue.png"
+ },
+ {
+  "page": 6,
+  "kind": "issue",
+  "png": "cards/76dc881843f4d197.png",
+  "overflow": [],
+  "issue_id": "i3",
+  "level": "부족",
+  "file": "card-06-issue.png"
+ },
+ {
+  "page": 7,
+  "kind": "issue",
+  "png": "cards/0fadd7f83b168f88.png",
+  "overflow": [],
+  "issue_id": "i4",
+  "level": "부족",
+  "file": "card-07-issue.png"
+ },
+ {
+  "page": 8,
+  "kind": "concept",
+  "png": "cards/4e267565de94f9a6.png",
+  "overflow": [],
+  "concept_id": "k6",
+  "file": "card-08-concept.png"
+ },
+ {
+  "page": 9,
+  "kind": "issue",
+  "png": "cards/68c079c0668b6413.png",
+  "overflow": [],
+  "issue_id": "i5",
+  "level": "일부",
+  "file": "card-09-issue.png"
+ },
+ {
+  "page": 10,
+  "kind": "issue",
+  "png": "cards/bd9586dc8bc6de1b.png",
+  "overflow": [],
+  "issue_id": "i6",
+  "level": "부족",
+  "file": "card-10-issue.png"
+ },
+ {
+  "page": 11,
+  "kind": "issue",
+  "png": "cards/a60a85a48926bab3.png",
+  "overflow": [],
+  "issue_id": "i7",
+  "level": "부족",
+  "file": "card-11-issue.png"
+ },
+ {
+  "page": 12,
+  "kind": "gaps",
+  "png": "cards/f8932b5e3625ff1d.png",
+  "overflow": [],
+  "file": "card-12-gaps.png"
+ }
+]

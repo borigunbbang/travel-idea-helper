@@ -1,0 +1,127 @@
+{
+ "places": {
+  "전남 고흥 쑥섬(애도)": {
+   "status": "none",
+   "method": 4,
+   "tried": [
+    "분류 전남 고흥 쑥섬 → 없음",
+    "분류 고흥 → 없음",
+    "분류 쑥섬 → 없음",
+    "검색 전남 고흥 쑥섬 풍경",
+    "검색 고흥 풍경"
+   ],
+   "fetched": 1792977140.0057979
+  },
+  "제주 가파도": {
+   "status": "failed",
+   "method": 4,
+   "error": "HTTP Error 429: Too Many Requests",
+   "tried": [
+    "분류 제주 가파도 → 없음",
+    "분류 가파도 → Category:Gapa Island",
+    "검색 제주 가파도 풍경"
+   ],
+   "fetched": 1792977164.402394
+  },
+  "제주 비양도": {
+   "status": "ok",
+   "method": 4,
+   "file": "photos/c44c15eff124ddbe.jpg",
+   "width": 900,
+   "height": 675,
+   "query": "비양도",
+   "how": "공용 분류 Biyangdo",
+   "title": "Biyangdo 48.jpg",
+   "file_page": "https://commons.wikimedia.org/wiki/File:Biyangdo_48.jpg",
+   "year": 2026,
+   "author": "Grapesurgeon",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "fetched": 1792977187.919536
+  },
+  "전남 함평": {
+   "status": "ok",
+   "method": 4,
+   "file": "photos/efadce13bff2b1cd.jpg",
+   "width": 900,
+   "height": 389,
+   "query": "함평",
+   "how": "공용 분류 Hampyeong",
+   "title": "Hpg01.jpg",
+   "file_page": "https://commons.wikimedia.org/wiki/File:Hpg01.jpg",
+   "year": 2013,
+   "author": "Ssk21",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "fetched": 1792977212.4238012
+  },
+  "충남 서산 해미읍성": {
+   "status": "failed",
+   "method": 4,
+   "error": "HTTP Error 429: Too Many Requests",
+   "tried": [
+    "분류 충남 서산 해미읍성 → 없음"
+   ],
+   "fetched": 1792977234.888438
+  },
+  "경북 봉화 분천·석포": {
+   "status": "none",
+   "method": 4,
+   "tried": [
+    "분류 경북 봉화 분천 석포 → 없음",
+    "분류 경북 봉화 분천 → 없음",
+    "분류 봉화 → 없음",
+    "분류 분천 → 없음",
+    "검색 경북 봉화 분천 석포 풍경",
+    "검색 경북 봉화 분천 풍경"
+   ],
+   "fetched": 1792977246.939894
+  },
+  "강원 고성 건봉사 일대": {
+   "status": "failed",
+   "method": 4,
+   "error": "HTTP Error 429: Too Many Requests",
+   "tried": [
+    "분류 강원 고성 건봉사 일대 → 없음",
+    "분류 강원 고성 건봉사 → 없음",
+    "분류 건봉사 → Category:Geonbongsa"
+   ],
+   "fetched": 1792977271.5279412
+  },
+  "제주 우도": {
+   "status": "failed",
+   "method": 4,
+   "error": "HTTP Error 429: Too Many Requests",
+   "tried": [],
+   "fetched": 1792977292.077815
+  },
+  "경남 남해": {
+   "status": "none",
+   "method": 4,
+   "tried": [
+    "분류 경남 남해 → 없음",
+    "분류 남해 → 없음",
+    "검색 경남 남해 풍경",
+    "검색 남해 풍경"
+   ],
+   "fetched": 1792977306.2033558
+  },
+  "강원 강릉": {
+   "status": "ok",
+   "method": 4,
+   "file": "photos/5f064ff556756057.jpg",
+   "width": 900,
+   "height": 506,
+   "query": "강릉",
+   "how": "공용 분류 Gangneung",
+   "title": "GO-Tsu.jpg",
+   "file_page": "https://commons.wikimedia.org/wiki/File:GO-Tsu.jpg",
+   "year": 2024,
+   "author": "Dittwjfsdgkvkdjg",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "fetched": 1792977315.87244
+  }
+ },
+ "state": "loading"
+}

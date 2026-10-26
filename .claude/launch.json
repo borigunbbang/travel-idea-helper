@@ -1,6 +1,27 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "cardnews", "runtimeExecutable": ".venv/bin/python", "runtimeArgs": ["-m", "app.main"], "port": 8765 }
+    {
+      "name": "travel",
+      "runtimeExecutable": ".venv/bin/python",
+      "runtimeArgs": [
+        "-m",
+        "app.main"
+      ],
+      "port": 8765
+    },
+    {
+      "name": "travel-mock",
+      "runtimeExecutable": "/usr/bin/env",
+      "runtimeArgs": [
+        "TRAVEL_ENGINE=mock",
+        "TRAVEL_DATA=data/mock-test",
+        ".venv/bin/python",
+        "-m",
+        "app.main",
+        "8790"
+      ],
+      "port": 8790
+    }
   ]
 }

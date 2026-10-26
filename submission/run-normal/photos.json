@@ -1,0 +1,188 @@
+{
+ "places": {
+  "경북 영주 국립산림치유원": {
+   "status": "ok",
+   "method": 4,
+   "file": "photos/0cb35f9df7ed533a.jpg",
+   "width": 900,
+   "height": 600,
+   "query": "영주",
+   "how": "공용 분류 Yeongju",
+   "title": "South Korea Temple, Huibangsa.jpg",
+   "file_page": "https://commons.wikimedia.org/wiki/File:South_Korea_Temple,_Huibangsa.jpg",
+   "year": 2017,
+   "author": "Trainholic",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "fetched": 1792762368.5330088
+  },
+  "전국 템플스테이 사찰(지역은 출발지에 따라 선택)": {
+   "status": "failed",
+   "method": 4,
+   "error": "HTTP Error 429: Too Many Requests",
+   "tried": [
+    "분류 전국 템플스테이 사찰 → 없음",
+    "분류 템플스테이 사찰 → 없음",
+    "분류 템플스테이 → 없음",
+    "분류 사찰 → Category:Buddhist temples"
+   ],
+   "fetched": 1792762415.4646158
+  },
+  "강원 평창 오대산 월정사·상원사 일대": {
+   "status": "failed",
+   "method": 4,
+   "error": "HTTP Error 429: Too Many Requests",
+   "tried": [],
+   "fetched": 1792762436.20483
+  },
+  "충남 아산 온양온천": {
+   "status": "ok",
+   "method": 4,
+   "file": "photos/2bee77d7185fe9f6.jpg",
+   "width": 900,
+   "height": 600,
+   "query": "아산",
+   "how": "공용 분류 Asan, Chungcheongnam-do",
+   "title": "Blue Crystal Village, Asan.jpg",
+   "file_page": "https://commons.wikimedia.org/wiki/File:Blue_Crystal_Village,_Asan.jpg",
+   "year": 2019,
+   "author": "Korea Tourism Organization, Kim Jiho",
+   "license": "KOGL Type 1",
+   "license_url": "http://www.kogl.or.kr/info/licenseType1.do",
+   "fetched": 1792762447.988107
+  },
+  "부산 동래온천": {
+   "status": "ok",
+   "method": 4,
+   "file": "photos/b44690bdbdcd023f.jpg",
+   "width": 900,
+   "height": 675,
+   "query": "동래온천",
+   "how": "공용 분류 Dongnae Hot Spring",
+   "title": "Dongnae Hot Spring 01.JPG",
+   "file_page": "https://commons.wikimedia.org/wiki/File:Dongnae_Hot_Spring_01.JPG",
+   "year": 2018,
+   "author": "Abasaa",
+   "license": "Public domain",
+   "license_url": "",
+   "fetched": 1792762453.134211
+  },
+  "경북 울진 덕구온천": {
+   "status": "failed",
+   "method": 4,
+   "error": "HTTP Error 429: Too Many Requests",
+   "tried": [
+    "분류 경북 울진 덕구온천 → 없음"
+   ],
+   "fetched": 1792762474.772039
+  },
+  "강원 동해 묵호": {
+   "status": "failed",
+   "method": 4,
+   "error": "HTTP Error 429: Too Many Requests",
+   "tried": [],
+   "fetched": 1792762495.800899
+  },
+  "강원 평창": {
+   "status": "none",
+   "method": 4,
+   "tried": [
+    "분류 강원 평창 → 없음",
+    "분류 평창 → 없음",
+    "검색 강원 평창 풍경",
+    "검색 평창 풍경"
+   ],
+   "fetched": 1792762503.6434329
+  },
+  "강원 횡성": {
+   "status": "ok",
+   "method": 4,
+   "file": "photos/bd54c890748b2cc4.jpg",
+   "width": 900,
+   "height": 674,
+   "query": "횡성",
+   "how": "공용 분류 Hoengseong",
+   "title": "웰리힐리파크 야경.jpg",
+   "file_page": "https://commons.wikimedia.org/wiki/File:%EC%9B%B0%EB%A6%AC%ED%9E%90%EB%A6%AC%ED%8C%8C%ED%81%AC_%EC%95%BC%EA%B2%BD.jpg",
+   "year": 2019,
+   "author": "타베한",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "fetched": 1792762509.8336508
+  },
+  "제주 올레길": {
+   "status": "none",
+   "method": 4,
+   "tried": [
+    "분류 제주 올레길 → 없음",
+    "분류 올레길 → 없음",
+    "검색 제주 올레길 풍경",
+    "검색 올레길 풍경"
+   ],
+   "fetched": 1792762515.427808
+  },
+  "경남 남해 바래길": {
+   "status": "failed",
+   "method": 4,
+   "error": "HTTP Error 429: Too Many Requests",
+   "tried": [],
+   "fetched": 1792762536.316315
+  },
+  "전남 완도 청산도 슬로길": {
+   "status": "failed",
+   "method": 4,
+   "error": "HTTP Error 429: Too Many Requests",
+   "tried": [],
+   "fetched": 1792762557.001965
+  },
+  "경북 경주": {
+   "status": "ok",
+   "method": 4,
+   "file": "photos/1c62dfa7510b06ad.jpg",
+   "width": 900,
+   "height": 600,
+   "query": "경주",
+   "how": "공용 분류 Gyeongju",
+   "title": "Donggung Palace & Wolji Pond, Gyeongju - Donggung2690.jpg",
+   "file_page": "https://commons.wikimedia.org/wiki/File:Donggung_Palace_%26_Wolji_Pond,_Gyeongju_-_Donggung2690.jpg",
+   "year": 2024,
+   "author": "lumoplank",
+   "license": "CC0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "fetched": 1792762566.236831
+  },
+  "경북 안동": {
+   "status": "ok",
+   "method": 4,
+   "file": "photos/b68882f94f4881a8.jpg",
+   "width": 900,
+   "height": 608,
+   "query": "안동",
+   "how": "공용 분류 Andong",
+   "title": "Panoramic view of Andong City.jpg",
+   "file_page": "https://commons.wikimedia.org/wiki/File:Panoramic_view_of_Andong_City.jpg",
+   "year": null,
+   "author": "Academy of Korean Studies",
+   "license": "KOGL Type 1",
+   "license_url": "http://www.kogl.or.kr/info/licenseType1.do",
+   "fetched": 1792762572.76861
+  },
+  "충북 제천 국립제천치유의숲": {
+   "status": "ok",
+   "method": 4,
+   "file": "photos/28e36060d5e754d1.jpg",
+   "width": 900,
+   "height": 365,
+   "query": "제천",
+   "how": "공용 분류 Jecheon",
+   "title": "Panoramic view of Jecheon City.jpg",
+   "file_page": "https://commons.wikimedia.org/wiki/File:Panoramic_view_of_Jecheon_City.jpg",
+   "year": null,
+   "author": "Academy of Korean Studies",
+   "license": "KOGL Type 1",
+   "license_url": "http://www.kogl.or.kr/info/licenseType1.do",
+   "fetched": 1792762388.621999
+  }
+ },
+ "state": "done"
+}
