@@ -4,6 +4,8 @@
 
 > 2026-10-23 카드뉴스 에이전트를 이 앱으로 바꿨습니다(DECISIONS 44). 카드뉴스 코드와 확인 기록은 git 기록(커밋 `725cf53`까지)에 있습니다.
 >
+> **실행 결과 보기(카드 12장과 해설 문서): https://borigunbbang.github.io/travel-idea-helper/** — 앱으로 만든 결과물을 보여 주는 정적 페이지입니다. 앱 자체는 아래 '실행하기'대로 내 컴퓨터에서 켭니다.
+>
 > **과제 제출물 모음은 [submission/README.md](submission/README.md)** 에 있습니다: 정상 입력·자료 부족 입력 실행 화면과 산출물, 실패와 개선, 카드뉴스 완료 범위.
 (원래 키트 안내는 `KIT_README.md`, 요구사항은 `PRD.md`, 결정 기록은 `DECISIONS.md`, API와 연결 방식은 `API_SPEC.md`)
 

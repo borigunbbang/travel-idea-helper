@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>여행 구상 결과 보기</title>
+<meta name="description" content="여행 구상 도우미로 만든 정상 입력 결과: 카드 12장과 해설 문서">
+<style>
+:root { --bg:#f7f5f0; --fg:#1d1d1f; --muted:#666a73; --card:#fff; --line:#e2ddd2; --accent:#2f5bea; --ok:#067647; --part:#b54708; --none:#b42318; }
+@media (prefers-color-scheme: dark) { :root { --bg:#16171b; --fg:#ecebe8; --muted:#a3a6ad; --card:#202227; --line:#33363d; --accent:#7f9cff; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font-family:-apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; line-height:1.6; }
+main { max-width:1100px; margin:0 auto; padding:28px 16px 60px; }
+h1 { font-size:1.5rem; margin:0 0 4px; } h2 { font-size:1.15rem; margin:28px 0 10px; }
+.muted { color:var(--muted); font-size:.92rem; }
+.box { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin:12px 0; }
+.lv { display:inline-block; color:#fff; border-radius:99px; padding:0 8px; font-size:.78rem; font-weight:600; }
+.lv.ok { background:var(--ok); } .lv.part { background:var(--part); } .lv.none { background:var(--none); }
+.links a { display:inline-block; margin:4px 10px 4px 0; color:var(--accent); font-weight:600; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:14px; }
+figure { margin:0; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+figure img { width:100%; display:block; aspect-ratio:4/5; object-fit:cover; }
+figcaption { padding:8px 10px; font-size:.85rem; }
+ol { padding-left:20px; } li { margin:3px 0; }
+a { color:var(--accent); }
+</style></head>
+<body><main>
+<h1>여행 구상 도우미 — 실행 결과</h1>
+<p class="muted">이 페이지는 실행된 앱이 아니라, 앱으로 만든 결과물(최종 승인 v11)을 보여 주는 정적 페이지다. 앱은 각자 컴퓨터에서 켠다(<a href="https://github.com/borigunbbang/travel-idea-helper#readme">실행 방법</a>).</p>
+
+<div class="box">
+<p><b>입력한 구상</b>: 2박 3일 혼자여행, 국내 여행, 예산 50만원 이하, 힐링</p>
+<ol class="muted">
+<li>AI가 구상에서 조건을 가리고, 실제 검색으로 핵심 개념 6개를 제안</li>
+<li>사람이 2개를 고름: 가을 끝자락 강원 바다·숲·메밀밭 / 한옥 도시 걷기</li>
+<li>AI가 꼭 필요한 것만 질문(출발지·이동 수단) → 답: 서울·수도권, 대중교통</li>
+<li>AI가 쟁점 7개를 세우고 근거를 붙여 해설, 앱이 출처로 근거 수준을 다시 점검</li>
+<li>사람이 최종 승인 → 앱이 카드·문서를 내보내고 다시 열어 점검(통과 43 · 실패 0 · 미확인 6)</li>
+</ol>
+<p>쟁점 7개: <span class="lv ok">근거 충분 0</span> <span class="lv part">근거 일부 3</span> <span class="lv none">자료 부족 4</span>
+<span class="muted"> · 조사 기준 2026-10-23</span></p>
+<p class="links"><a href="guide.html">해설 문서 전체 보기</a><a href="https://github.com/borigunbbang/travel-idea-helper/blob/main/submission/run-normal/export/check_report.md">점검 보고서</a><a href="https://github.com/borigunbbang/travel-idea-helper/raw/main/submission/run-normal/export/travel-cards.zip">카드 전체 ZIP</a><a href="https://github.com/borigunbbang/travel-idea-helper/blob/main/submission/README.md">과제 제출물 모음</a></p>
+</div>
+
+<h2>카드 12장</h2>
+<p class="muted">카드를 누르면 원본 크기(1080×1350)로 열린다. 그림은 AI 생성이 아니라 앱이 도형으로 그린 아이콘이다.</p>
+<div class="grid">
+<figure><a href="cards/card-01-cover.png" target="_blank" rel="noopener"><img src="cards/card-01-cover.png" alt="1번째 카드" loading="lazy"></a>
+<figcaption><b>1</b> · 표지</figcaption></figure>
+<figure><a href="cards/card-02-overview.png" target="_blank" rel="noopener"><img src="cards/card-02-overview.png" alt="2번째 카드" loading="lazy"></a>
+<figcaption><b>2</b> · 한눈에 보기</figcaption></figure>
+<figure><a href="cards/card-03-concept.png" target="_blank" rel="noopener"><img src="cards/card-03-concept.png" alt="3번째 카드" loading="lazy"></a>
+<figcaption><b>3</b> · 핵심 개념</figcaption></figure>
+<figure><a href="cards/card-04-issue.png" target="_blank" rel="noopener"><img src="cards/card-04-issue.png" alt="4번째 카드" loading="lazy"></a>
+<figcaption><b>4</b> · <span class="lv part">근거 일부</span> 쟁점 1. 서울에서 대중교통만으로 묵호·평창·횡성을 2박 3일에 돌 수 있나?</figcaption></figure>
+<figure><a href="cards/card-05-issue.png" target="_blank" rel="noopener"><img src="cards/card-05-issue.png" alt="5번째 카드" loading="lazy"></a>
+<figcaption><b>5</b> · <span class="lv part">근거 일부</span> 쟁점 2. 지금(10월 하순) 메밀꽃과 단풍을 볼 수 있나?</figcaption></figure>
+<figure><a href="cards/card-06-issue.png" target="_blank" rel="noopener"><img src="cards/card-06-issue.png" alt="6번째 카드" loading="lazy"></a>
+<figcaption><b>6</b> · <span class="lv none">자료 부족</span> 쟁점 3. 혼자 예산 50만원 안에 들어오나?</figcaption></figure>
+<figure><a href="cards/card-07-issue.png" target="_blank" rel="noopener"><img src="cards/card-07-issue.png" alt="7번째 카드" loading="lazy"></a>
+<figcaption><b>7</b> · <span class="lv none">자료 부족</span> 쟁점 4. 3일차 안동까지 넣어도 동선이 무리 없나?</figcaption></figure>
+<figure><a href="cards/card-08-concept.png" target="_blank" rel="noopener"><img src="cards/card-08-concept.png" alt="8번째 카드" loading="lazy"></a>
+<figcaption><b>8</b> · 핵심 개념</figcaption></figure>
+<figure><a href="cards/card-09-issue.png" target="_blank" rel="noopener"><img src="cards/card-09-issue.png" alt="9번째 카드" loading="lazy"></a>
+<figcaption><b>9</b> · <span class="lv part">근거 일부</span> 쟁점 5. 서울에서 경주·안동까지 대중교통 이동 시간과 교통비는 얼마나 드나?</figcaption></figure>
+<figure><a href="cards/card-10-issue.png" target="_blank" rel="noopener"><img src="cards/card-10-issue.png" alt="10번째 카드" loading="lazy"></a>
+<figcaption><b>10</b> · <span class="lv none">자료 부족</span> 쟁점 6. 한옥 1인 숙박은 얼마나 하고 예산에 맞나?</figcaption></figure>
+<figure><a href="cards/card-11-issue.png" target="_blank" rel="noopener"><img src="cards/card-11-issue.png" alt="11번째 카드" loading="lazy"></a>
+<figcaption><b>11</b> · <span class="lv none">자료 부족</span> 쟁점 7. 이 코스가 가을에도 조용한 힐링이 되나?</figcaption></figure>
+<figure><a href="cards/card-12-gaps.png" target="_blank" rel="noopener"><img src="cards/card-12-gaps.png" alt="12번째 카드" loading="lazy"></a>
+<figcaption><b>12</b> · 아직 확인 못 한 것</figcaption></figure>
+</div>
+</main></body></html>

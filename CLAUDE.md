@@ -1,7 +1,7 @@
 # 여행 구상 도우미 — 새 세션용 안내
 
 이 파일은 새 세션이 지금까지의 흐름을 빠르게 파악하도록 정리한 것이다. 자세한 근거는 아래 문서에 있다.
-- `PRD.md` 요구사항 · `ACCEPTANCE.md` 확인 목록 · `DECISIONS.md` 결정 기록(1~64, 44부터 여행 구상, 52부터 카드 보기, 57부터 후보 사진) · `API_SPEC.md` API·상태·객체 · `README.md` 실행법과 확인 결과
+- `PRD.md` 요구사항 · `ACCEPTANCE.md` 확인 목록 · `DECISIONS.md` 결정 기록(1~65, 44부터 여행 구상, 52부터 카드 보기, 57부터 후보 사진) · `API_SPEC.md` API·상태·객체 · `README.md` 실행법과 확인 결과
 - `KIT_README.md`, `ENGINE_GUIDE.md`, `EXAMPLE_RUN.md`, `REFERENCES.md`는 키트 원본 자료(고치지 않음)
 - 2026-10-23에 카드뉴스 에이전트를 이 앱으로 교체했다. 카드뉴스 코드는 커밋 `725cf53`까지의 git 기록에 있다.
 
@@ -52,6 +52,7 @@ TRAVEL_DATA=data/real-test .venv/bin/python -m app.main 8791                    
 - 사용자가 터미널에서 켜 둔 8765 서버가 있으면 끄지 말고 다른 포트로 시험한다. 코드를 바꾸면 사용자에게 앱을 다시 켜라고 알린다.
 
 ## 현재 상태 (2026-10-26 기준)
+- 원격 저장소: https://github.com/borigunbbang/travel-idea-helper (공개). 결과 보기 페이지: `docs/` → https://borigunbbang.github.io/travel-idea-helper/. 커밋 작성자 이메일은 깃허브 가림 주소(이 폴더 git config).
 - 과제 제출물 모음: `submission/`(README, 화면 캡처 `screens/`, 정상 입력 `run-normal/`, 자료 부족 입력 `run-poor/`, 카드뉴스 완료 `cardnews-done/`). 화면 캡처는 `submission/shoot.sh <이름> <해시>`(크롬 헤드리스, 8765 앱이 켜져 있어야 함).
 - 실제 프로젝트: `p_663fc14a2e` 내 구상(최종 승인 v11), `p_f0df7ec06a` 자료 부족 입력 시험(해설 검토 단계, 승인 안 함).
 - 교체 구현 완료. 모의 엔진으로 전체 흐름, 실제 엔진으로 개념 제안·해설 확인(README 확인 결과 표).

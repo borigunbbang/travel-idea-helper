@@ -3,6 +3,8 @@
 카드뉴스 에이전트의 흐름(조사 → 후보 비교 → 사람이 선택 → 결과물 → 검수)을 **여행지 구상**에 적용했다.
 여행 구상을 한두 문장으로 적으면 실제 자료로 핵심 개념을 제안하고, 고른 개념마다 따져볼 쟁점과 근거가 있는 해설을 그림 카드로 만든다. 자료가 모자란 곳은 '자료 부족'으로 표시한다.
 
+**실행 결과 보기 링크: https://borigunbbang.github.io/travel-idea-helper/** (정상 입력의 카드 12장과 해설 문서, GitHub Pages 정적 페이지)
+
 ## 제출물 지도
 
 | 과제가 요구한 것 | 어디에 있나 |
@@ -11,7 +13,7 @@
 | PRD의 결정(해결할 불편·기대 산출물·사람 결정) | [../PRD.md](../PRD.md) 맨 앞 '해결할 불편', '기대 산출물', '워크플로 설계' 표, '카드뉴스 PRD에서 가져온 것과 바꾼 것' |
 | 선택 이유 | [../DECISIONS.md](../DECISIONS.md) 44~63번(44번부터 여행 구상) |
 | 화면과 서버의 약속 | [../API_SPEC.md](../API_SPEC.md) |
-| 실행 증거 — 정상 입력 | `screens/a*.png`, `run-normal/` (아래 1) |
+| 실행 증거 — 정상 입력 | `screens/a*.png`, `run-normal/` (아래 1), 결과 보기 링크 https://borigunbbang.github.io/travel-idea-helper/ |
 | 실행 증거 — 자료 부족 입력 | `screens/b*.png`, `run-poor/` (아래 2) |
 | 실패와 개선 | 아래 3 |
 | 검증 기록 | `run-normal/export/check_report.md`, [../README.md](../README.md) '확인 결과' 표들 |
